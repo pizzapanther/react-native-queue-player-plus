@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   # `min_ios_version_supported`, which resolves lower: AVPlayer and
   # AVPlayerItem only drop their main-thread requirement at iOS 16.
   s.platforms    = { :ios => '16.0' }
-  s.source       = { :git => "https://github.com/ghenry22/react-native-queue-player.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/pizzapanther/react-native-queue-player-plus.git", :tag => "#{s.version}" }
 
   # NOTE on cross-pod consumer-Swift access:
   #
