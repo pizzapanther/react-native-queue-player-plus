@@ -70,14 +70,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ghenry22/react-native-queue-player.git"
+    "url": "git+https://github.com/pizzapanther/react-native-queue-player-plus.git"
   },
-  "author": "Gaven Henry <ghenry22@gmail.com> (https://github.com/ghenry22)",
+  "author": "Paul Bailey <paul@neutron.studio> (https://github.com/pizzapanther)",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/ghenry22/react-native-queue-player/issues"
+    "url": "https://github.com/pizzapanther/react-native-queue-player-plus/issues"
   },
-  "homepage": "https://ghenry22.github.io/react-native-queue-player/",
+  "homepage": "https://pizzapanther.github.io/react-native-queue-player-plus/",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
