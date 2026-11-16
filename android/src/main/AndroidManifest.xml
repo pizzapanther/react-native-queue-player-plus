@@ -1,0 +1,173 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+  <!-- Cast requires INTERNET + ACCESS_NETWORK_STATE + ACCESS_WIFI_STATE
+       for mDNS discovery over the LAN and for the SDK to establish its
+       control channel. androidx.mediarouter also reads WiFi state. -->
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+  <!-- AirPlay discovery uses NsdManager (mDNS multicast). The
+       MulticastLock acquired by AirPlayDiscovery requires this permission
+       so the radio doesn't filter inbound multicast packets out of the
+       Wi-Fi receive queue while the screen is on. -->
+  <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+
+  <!-- Android 16+ Local Network Protections: apps TARGETING SDK 37+ need
+       this runtime permission to reach LAN devices (mDNS Cast / AirPlay
+       discovery). Declared so it merges into consumer apps; below target
+       SDK 37 LAN access is unrestricted and the permission is effectively
+       granted. Host apps targeting SDK 37+ request the runtime grant from
+       their Activity, the same way they request POST_NOTIFICATIONS. -->
+  <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+
+  <!-- ExoPlayer.setWakeMode(C.WAKE_MODE_NETWORK) holds a CPU +
+       Wifi wake lock while streaming so backgrounded playback
+       doesn't stutter on deep-sleep transitions. Consumer apps
+       will see this permission merged in from the library
+       manifest. -->
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+  <!-- Foreground service hosting the playback session. Required on
+       Android 14+ (API 34) per the foreground-service-types policy:
+       a media-playback service must declare both the generic
+       FOREGROUND_SERVICE permission and the typed
+       FOREGROUND_SERVICE_MEDIA_PLAYBACK permission, plus the
+       service's `android:foregroundServiceType="mediaPlayback"`. -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+  <!-- Android 13+ (API 33): user must grant POST_NOTIFICATIONS for
+       the media-style notification to render. Consumer apps request
+       the runtime permission; the library declares the manifest
+       entry so it merges in regardless of consumer config. -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+  <application>
+    <!-- Android Auto descriptor pointer. Auto's `CarApiClient`
+         scans installed packages for this meta-data + reads the
+         referenced XML to decide whether to surface the app in
+         the head-unit launcher. The `media` capability is the
+         unified declaration for browsable + playable audio
+         (no separate "media library" capability exists). Phone-
+         projected Auto only — AAOS uses a separate
+         `com.android.automotive` meta-data + descriptor that the
+         lib does NOT declare. -->
+    <meta-data
+        android:name="com.google.android.gms.car.application"
+        android:resource="@xml/automotive_app_desc" />
+
+    <!-- PlaybackService owns the ExoPlayer + MediaLibrarySession.
+         Bound in-process by TrackPlayer (the Nitro Hybrid) via
+         ACTION_LOCAL_BIND. Cross-process bindings:
+
+           - androidx.media3.session.MediaLibraryService — the
+             primary action for Media3-aware controllers (Android
+             Auto, Assistant) that want browse + search.
+           - android.media.browse.MediaBrowserService — legacy
+             platform API that some Bluetooth car kits (older
+             head units) still use as a fallback discovery
+             mechanism. Not deprecated.
+           - android.intent.action.MEDIA_BUTTON — OS-routed media-
+             key intents when the MediaButtonReceiver below forwards
+             them, OR when the OS starts the service directly on a
+             hardware media-key press from a deep-sleep state.
+
+         The `androidx.media3.session.MediaSessionService` action is
+         intentionally NOT declared. MediaLibraryService extends
+         MediaSessionService so the service resolves either action,
+         but per androidx/media#1774 maintainer thread declaring both
+         can cause Android Auto's bind probe to resolve via MSS
+         first + see a connection without library commands, which
+         logs `MediaBrowserService: No root for client` and triggers
+         a bind/unbind retry storm. Sticking to the MLS action +
+         legacy MediaBrowserService is the canonical pattern per
+         the androidx/media#1774 maintainer guidance.
+
+         exported=true is required for cross-process binders
+         (system controllers + the receiver path) to reach the
+         service. -->
+    <service
+        android:name="com.margelo.nitro.queueplayer.PlaybackService"
+        android:foregroundServiceType="mediaPlayback"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="androidx.media3.session.MediaLibraryService" />
+        <action android:name="android.media.browse.MediaBrowserService" />
+        <action android:name="android.intent.action.MEDIA_BUTTON" />
+      </intent-filter>
+    </service>
+
+    <!-- Exported ContentProvider that serves locally-cached artwork
+         files (`file://` URIs on the phone's private storage) to
+         cross-process media controllers — Android Auto's gearhead,
+         Wear, Assistant. Without this, AA's Now Playing surface
+         renders a blank cover for any TrackItem whose artworkUrl is
+         a private `file://`: gearhead's ContentResolver runs in a
+         different process and Media3 does not currently issue URI
+         permission grants for connected controllers (androidx/media
+         issue #2331). The provider exposes each locally-cached
+         file via a stable `content://` token URI that gearhead can
+         read with the auto-granted URI permission.
+
+         The authority is templated per consumer app via
+         `${applicationId}` so multiple RNQP-using apps on the same
+         device don't conflict. -->
+    <provider
+        android:name="com.margelo.nitro.queueplayer.ArtworkContentProvider"
+        android:authorities="${applicationId}.rnqp.artwork"
+        android:exported="true"
+        android:grantUriPermissions="true" />
+
+    <!-- Manifest-registered MediaButtonReceiver routes hardware media
+         keys, Bluetooth/AVRCP transport, and lock-screen tile presses
+         to PlaybackService when the app is not in the foreground or
+         the service has been killed. Media3 starts the service as a
+         foreground service and forwards the key event as
+         ACTION_MEDIA_BUTTON; the service consumes it through the
+         media-button dispatch path. Requires the
+         MediaSession.Callback#onPlaybackResumption override the
+         service installs so resumption succeeds when no session is
+         currently bound. -->
+    <receiver
+        android:name="androidx.media3.session.MediaButtonReceiver"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MEDIA_BUTTON" />
+      </intent-filter>
+    </receiver>
+
+    <!-- Cast SDK reflectively instantiates ChromecastOptionsProvider
+         via this meta-data the first time `CastContext.getSharedInstance`
+         is called. Required — without it, getSharedInstance throws. -->
+    <meta-data
+        android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+        android:value="com.margelo.nitro.queueplayer.cast.chromecast.ChromecastOptionsProvider" />
+
+    <!-- MediaTransferReceiver — required by Cast SDK 21+ for the
+         Stream Transfer / output-switcher surface on Android 13+.
+         tools:node="merge" coexists with host-app declarations. -->
+    <receiver
+        android:name="androidx.mediarouter.media.MediaTransferReceiver"
+        android:exported="false"
+        tools:node="merge" />
+
+    <!-- androidx.startup InitializationProvider — runs the AirPlay
+         backend initializer at process start. AirPlayBackendInitializer
+         registers AirPlayBackend with CastBackends and installs the
+         ProcessLifecycleOwner observer that pauses NSD discovery while
+         backgrounded. tools:node="merge" coexists with the consumer
+         app's own InitializationProvider meta-data list. -->
+    <provider
+        android:name="androidx.startup.InitializationProvider"
+        android:authorities="${applicationId}.androidx-startup"
+        android:exported="false"
+        tools:node="merge">
+      <meta-data
+          android:name="com.margelo.nitro.queueplayer.cast.airplay.AirPlayBackendInitializer"
+          android:value="androidx.startup" />
+    </provider>
+  </application>
+
+</manifest>

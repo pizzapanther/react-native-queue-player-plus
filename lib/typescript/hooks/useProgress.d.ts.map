@@ -1,0 +1,1 @@
+{"version":3,"file":"useProgress.d.ts","sourceRoot":"","sources":["../../../src/hooks/useProgress.ts"],"names":[],"mappings":"AAGA,MAAM,WAAW,aAAa;IAC5B,uEAAuE;IACvE,QAAQ,EAAE,MAAM,CAAC;IACjB,8DAA8D;IAC9D,QAAQ,EAAE,MAAM,CAAC;IACjB,4DAA4D;IAC5D,QAAQ,EAAE,MAAM,CAAC;CAClB;AAID;;;;GAIG;AACH,wBAAgB,WAAW,IAAI,aAAa,CAgB3C"}

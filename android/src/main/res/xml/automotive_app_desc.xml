@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android Auto descriptor — referenced from the
+  `com.google.android.gms.car.application` <meta-data> entry in
+  AndroidManifest.xml. The `media` capability advertises this app
+  as a browsable + playable audio source to phone-projected Auto.
+
+  Single-capability declaration. AAOS (Android Automotive OS)
+  is NOT declared here — that path uses a separate
+  `com.android.automotive` meta-data + a different XML schema and
+  is intentionally out of scope.
+-->
+<automotiveApp>
+  <uses name="media" />
+</automotiveApp>

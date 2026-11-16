@@ -1,0 +1,32 @@
+Third-party vendored sources for android-cast-airplay native build.
+
+libraop        81c2182649da8645ac2a58b78e9f370c79a4165b  https://github.com/philippe44/libraop
+               Client-only subset: raop_client, rtsp_client, aes, aes_ctr, alac
+
+crosstools     41544c653760a205cbf6cebfdeda4a9394cc6455  https://github.com/philippe44/crosstools
+               Platform abstraction: logging, networking, SSL, threading, utils
+
+dmap-parser    2f8ee61e2427a177beea919d72dde8931084fe51  https://github.com/philippe44/dmap-parser
+               DMAP/DAAP metadata parser
+
+alac (codec)   philippe44/alac via philippe44/libcodecs   https://github.com/philippe44/alac
+               Apple ALAC reference codec (encoder + decoder)
+
+alac_wrapper   philippe44/libcodecs addons/               https://github.com/philippe44/libcodecs
+               C++ wrapper around ALAC codec for libraop
+
+curve25519     philippe44/curve25519                      https://github.com/philippe44/curve25519
+               Ed25519 signing + Curve25519 DH (MIT license, mehdi sotoodeh)
+               Used by AP1 (libraop) only.
+
+pair_ap        OwnTone (forked-daapd)                     https://github.com/owntone/owntone-server
+               src/pair_ap/ subset: HomeKit transient + normal pairing, SRP-6a, TLV8.
+               MIT license. Used by AP2 (airplay2) only.
+
+libsodium      1.0.20                                     https://github.com/jedisct1/libsodium
+               Pre-built static libs (libsodium.a) per ABI.
+               ISC license. Ed25519, X25519, ChaCha20-Poly1305.
+
+OpenSSL        3.5.0                                      https://github.com/openssl/openssl
+               Pre-built static libs (libcrypto.a, libssl.a) per ABI.
+               Apache 2.0 license. Cross-compiled via build-openssl-android.sh.

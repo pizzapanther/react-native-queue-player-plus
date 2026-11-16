@@ -1,0 +1,64 @@
+# Standalone Podfile for the QueuePlayer XCTest harness.
+#
+# This harness is intentionally isolated from RNQP-Demo so that library unit
+# tests do not depend on the demo app's build state. It consumes:
+#   - React Native from react-native-queue-player/node_modules/react-native
+#     (installed as a devDependency of the library).
+#   - QueuePlayer (this repo) via :path => '../..' with the Tests test_spec
+#     enabled so CocoaPods generates the QueuePlayer-Unit-Tests scheme when
+#     pod install runs here.
+#
+# After `pod install`, run tests via:
+#   xcodebuild test \
+#     -workspace TestHost.xcworkspace \
+#     -scheme QueuePlayer-Unit-Tests \
+#     -sdk iphonesimulator \
+#     -destination 'platform=iOS Simulator,name=iPhone 16'
+
+require_relative '../../node_modules/react-native/scripts/react_native_pods'
+
+platform :ios, '16.0'
+
+prepare_react_native_project!
+
+target 'TestHost' do
+  # app_path + config_file_dir = tests-harness (this directory). RN codegen
+  # walks our package.json → node_modules symlink → finds react-native-nitro-
+  # modules and generates NitroModulesSpec/NitroModulesSpec.h.
+  use_react_native!(
+    :path => '../../node_modules/react-native',
+    :hermes_enabled => true,
+    :fabric_enabled => false,
+    :app_path => '.',
+    :config_file_dir => '.',
+  )
+
+  # Explicitly declare every transitive pod. Full RN autolinking via
+  # @react-native-community/cli is not wired up here (library's node_modules
+  # does not carry the CLI packages), so we declare what the library's
+  # podspec + test_spec actually depend on. QueuePlayer is listed first
+  # by convention to telegraph consumer intent — pod resolution itself
+  # is graph-based, not declaration-order-based, so the order is purely
+  # cosmetic. The explicit path-based `pod 'NitroModules'` line is the
+  # load-bearing piece: `QueuePlayer.podspec` declares
+  # `s.dependency 'NitroModules'` and Nitro is path-only (not on public
+  # spec repos), so without this line CocoaPods cannot resolve the dep.
+  pod 'QueuePlayer', :path => '../..', :testspecs => ['Tests']
+  pod 'NitroModules', :path => '../../node_modules/react-native-nitro-modules'
+end
+
+post_install do |installer|
+  react_native_post_install(
+    installer,
+    '../../node_modules/react-native',
+    :mac_catalyst_enabled => false,
+  )
+  # XCTest in the current Xcode is built for iOS 17 and does not back-deploy,
+  # so the test bundle targets 17.0 while the library itself stays at 16.0.
+  installer.pods_project.targets.each do |target|
+    next unless target.name == 'QueuePlayer-Unit-Tests'
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
+    end
+  end
+end

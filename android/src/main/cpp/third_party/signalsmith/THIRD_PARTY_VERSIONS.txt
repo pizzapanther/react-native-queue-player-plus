@@ -1,0 +1,9 @@
+signalsmith-stretch  main @ 57b93f4  (MIT)  https://github.com/Signalsmith-Audio/signalsmith-stretch
+signalsmith-linear   0.3.1                  (MIT)  https://github.com/Signalsmith-Audio/linear
+
+Vendored headers (header-only, built-in FFT — no platform/ backends, no tests):
+  include/signalsmith-stretch.h
+  include/signalsmith-linear/{stft,fft,linear}.h
+The signalsmith-linear/stft.h here is the repo-ROOT impl header (the upstream
+include/ forwarder + ../../ root split is flattened so the include path resolves
+directly under this include/ dir).

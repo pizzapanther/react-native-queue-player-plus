@@ -1,0 +1,269 @@
+buildscript {
+  ext.QueuePlayer = [
+    kotlinVersion: "2.2.0",
+    media3Version: "1.10.0",
+    minSdkVersion: 24,
+    compileSdkVersion: 37,
+    targetSdkVersion: 36
+  ]
+
+  ext.getExtOrDefault = { prop ->
+    if (rootProject.ext.has(prop)) {
+      return rootProject.ext.get(prop)
+    }
+
+    return QueuePlayer[prop]
+  }
+
+  repositories {
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath "com.android.tools.build:gradle:9.2.1"
+    // noinspection DifferentKotlinGradleVersion
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault('kotlinVersion')}"
+  }
+}
+
+def reactNativeArchitectures() {
+  def value = rootProject.getProperties().get("reactNativeArchitectures")
+  return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+apply from: '../nitrogen/generated/android/queueplayer+autolinking.gradle'
+
+apply plugin: "com.facebook.react"
+
+// Native .so's the consuming React Native app already ships — kept out of the
+// published AAR so the consumer's copies win (avoids duplicate-.so merge
+// conflicts). The self-instrumenting androidTest APK has no host app, so it
+// must keep its own libc++_shared.so (our native libs link against it); the
+// androidComponents block below re-includes it for that variant only.
+def consumerProvidedNativeLibs = [
+  "**/libc++_shared.so",
+  "**/libfbjni.so",
+  "**/libjsi.so",
+  "**/libfolly_json.so",
+  "**/libfolly_runtime.so",
+  "**/libglog.so",
+  "**/libhermes.so",
+  "**/libhermes-executor-debug.so",
+  "**/libhermes_executor.so",
+  "**/libreactnative.so",
+  "**/libreactnativejni.so",
+  "**/libturbomodulejsijni.so",
+  "**/libreact_nativemodule_core.so",
+  "**/libjscexecutor.so"
+]
+def resourceExcludes = ["META-INF", "META-INF/**"]
+
+android {
+  namespace "com.margelo.nitro.queueplayer"
+
+  compileSdkVersion getExtOrDefault("compileSdkVersion")
+
+  defaultConfig {
+    minSdkVersion getExtOrDefault("minSdkVersion")
+    targetSdkVersion getExtOrDefault("targetSdkVersion")
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    // Shipped in the AAR and applied to the consumer's R8 run so a consuming
+    // app's release build needs no manual rules for this library's transitive
+    // dependencies (e.g. Ktor's java.lang.management reference on Android).
+    consumerProguardFiles "consumer-rules.pro"
+
+    externalNativeBuild {
+      cmake {
+        cppFlags "-frtti -fexceptions -Wall -fstack-protector-all"
+        arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+        abiFilters (*reactNativeArchitectures())
+
+        buildTypes {
+          debug {
+            cppFlags "-O1 -g"
+          }
+          release {
+            cppFlags "-O2"
+          }
+        }
+      }
+    }
+  }
+
+  externalNativeBuild {
+    cmake {
+      path "CMakeLists.txt"
+    }
+  }
+
+  packagingOptions {
+    excludes = resourceExcludes + consumerProvidedNativeLibs
+  }
+
+  buildFeatures {
+    buildConfig true
+    prefab true
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+    }
+  }
+
+  lint {
+    disable "GradleCompatible"
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+}
+
+dependencies {
+  implementation "com.facebook.react:react-android"
+  implementation project(":react-native-nitro-modules")
+
+  // @Keep drives R8 retention of the Nitrogen-generated bridge classes, and
+  // this artifact carries the consumer rule that honours it. Resolved
+  // transitively via Media3 / androidx.core today; declared explicitly at the
+  // version that already resolves so the dependency surface is honest rather
+  // than relying on another artifact keeping it in the graph.
+  implementation "androidx.annotation:annotation:1.8.1"
+
+  // Media3 ExoPlayer — Android audio engine. Pinned to 1.10.0 (current
+  // stable, Mar 2026). 1.10 keeps cache + audio/wake-lock APIs stable
+  // and only deprecates MetadataRetriever (we don't use it).
+  implementation "androidx.media3:media3-exoplayer:${getExtOrDefault('media3Version')}"
+
+  // Lookahead cache: SimpleCache + LRU evictor live in media3-datasource;
+  // StandaloneDatabaseProvider lives in media3-database. Both are pulled
+  // transitively by media3-exoplayer today but declared explicitly so
+  // the dependency surface is self-documenting and survives a future
+  // media3-exoplayer slim-down.
+  implementation "androidx.media3:media3-datasource:${getExtOrDefault('media3Version')}"
+  implementation "androidx.media3:media3-database:${getExtOrDefault('media3Version')}"
+
+  // MediaSession + MediaSessionService — foreground-service playback
+  // with system-driven media-style notification, plus the bridge to
+  // external controllers (Android Auto, Wear, Assistant, hardware
+  // media buttons) via the standard MediaSessionService action.
+  implementation "androidx.media3:media3-session:${getExtOrDefault('media3Version')}"
+
+  // CastPlayer: a Player backed by the Cast SDK RemoteMediaClient. Bound
+  // as the MediaSession's player during a Chromecast session so the
+  // system media notification + lockscreen follow the receiver's
+  // metadata/transport. Reads the receiver queue via a MediaItemConverter.
+  implementation "androidx.media3:media3-cast:${getExtOrDefault('media3Version')}"
+
+  // Proactive lookahead writer: CacheWriter is dispatched on a coroutine
+  // scope so prefetch + cancellation play nicely with queue mutation
+  // churn. coroutines-android is pulled transitively by RN today;
+  // explicit declaration keeps the dependency surface honest.
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
+
+  // Cast — local HTTP server for Chromecast / future DLNA / Sonos
+  // backends to stream consumer-supplied `file://` URLs (offline
+  // content the host app downloaded). Not related to the lookahead
+  // cache (which stays fully native, simple, and streaming-focused).
+  // Ktor CIO is the smallest viable embedded HTTP server with
+  // proper Range / HEAD / Content-Length support.
+  implementation "io.ktor:ktor-server-core:3.2.3"
+  implementation "io.ktor:ktor-server-cio:3.2.3"
+  implementation "io.ktor:ktor-server-partial-content:3.2.3"
+  implementation "io.ktor:ktor-server-auto-head-response:3.2.3"
+
+  // Cast — Google Cast SDK + MediaRouter (used for both Cast
+  // discovery and the picker surface). mediarouter 1.8.0-beta01
+  // explicitly pinned: Cast 22.x rebased on new connect/disconnect
+  // APIs that the stable 1.7.x mediarouter doesn't expose.
+  implementation "com.google.android.gms:play-services-cast-framework:22.3.1"
+  implementation "androidx.mediarouter:mediarouter:1.8.1"
+
+  // AirPlay — self-installing backend via androidx.startup
+  // `InitializationProvider`; the AAR's mere presence on the classpath
+  // causes discovery to be available without host-app setup.
+  implementation "androidx.startup:startup-runtime:1.2.0"
+
+  // AirPlay — process-lifecycle observer pauses NSD discovery while the
+  // app is fully backgrounded so multicast scans don't burn battery.
+  // Pinned to 2.8.7 — 2.10's stricter `LifecycleRegistry` rejection
+  // ("State is 'DESTROYED' and cannot be moved to 'CREATED'") fires
+  // inside Robolectric 4.11.1's `ServiceController.destroy()` because
+  // `MediaSessionService`'s `ServiceLifecycleDispatcher` posts a
+  // post-super ON_STOP runnable AFTER the test driver has already
+  // moved the lifecycle to DESTROYED. The failure is in the
+  // Robolectric/lifecycle interop, not our code (our PlaybackService
+  // extends MediaLibraryService, not LifecycleService, and we never
+  // push our own LifecycleRegistry transitions). Re-attempt after
+  // bumping Robolectric to a release with explicit 2.10+ ServiceController
+  // support.
+  implementation "androidx.lifecycle:lifecycle-process:2.8.7"
+  implementation "androidx.lifecycle:lifecycle-common:2.8.7"
+
+  // JUnit + Robolectric test stack. Unit tests for pure Kotlin logic
+  // go under src/test/java/; instrumentation tests (if/when we add
+  // them) go under src/androidTest/java/.
+  testImplementation "junit:junit:4.13.2"
+  testImplementation "org.robolectric:robolectric:4.11.1"
+  testImplementation "androidx.test.ext:junit:1.1.5"
+  testImplementation "androidx.test:core:1.5.0"
+  // Coroutines test scaffolding: TestScope + advanceUntilIdle for the
+  // LookaheadCacheWriter orchestration tests.
+  testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2"
+
+  // Instrumented tests (src/androidTest/java/) run on a device/emulator —
+  // the only place the native .so can be loaded + the JNI exercised.
+  androidTestImplementation "androidx.test.ext:junit:1.1.5"
+  androidTestImplementation "androidx.test:runner:1.5.2"
+}
+
+android {
+  testOptions {
+    unitTests {
+      includeAndroidResources = true
+    }
+  }
+}
+
+// Robolectric Test task hardening: disable Gradle's task-output cache
+// + up-to-date check on every Test task in this module. Without this,
+// a flaky-but-passed run can be replayed from cache on subsequent
+// invocations, hiding the real signal. The pair is required:
+//   - `outputs.upToDateWhen { false }` defeats the incremental skip.
+//   - `outputs.cacheIf { false }` defeats the build-cache replay
+//     for both local + remote (org) build caches.
+// Both are needed because Gradle's two reuse mechanisms (incremental
+// up-to-date + cross-machine build cache) are independent gates.
+//
+// `tasks.withType(Test).configureEach` matches `org.gradle.api.tasks
+// .testing.Test` (JVM/Robolectric) ONLY — AGP's
+// `DeviceProviderInstrumentTestTask` (connectedAndroidTest) is a
+// different supertype and is unaffected. Downstream consumers who
+// run `:react-native-queue-player:test` under their own remote build
+// cache will always get a full rerun rather than a cache replay;
+// acceptable cost for a deterministic test signal.
+tasks.withType(Test).configureEach {
+  outputs.upToDateWhen { false }
+  outputs.cacheIf { false }
+}
+
+// The androidTest APK self-instruments (no host RN app), so it must ship the
+// libc++_shared.so our native libs link against — otherwise dlopen fails with
+// UnsatisfiedLinkError on the device. Re-include it for the androidTest
+// component only; the published AAR keeps excluding it (consumer provides it).
+androidComponents {
+  onVariants(selector().all()) { variant ->
+    def test = variant.androidTest
+    if (test != null) {
+      test.packaging.jniLibs.excludes.set(consumerProvidedNativeLibs - ["**/libc++_shared.so"])
+      test.packaging.resources.excludes.set(resourceExcludes)
+      test.packaging.jniLibs.pickFirsts.add("**/libc++_shared.so")
+    }
+  }
+}

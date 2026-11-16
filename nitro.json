@@ -1,0 +1,53 @@
+{
+  "cxxNamespace": ["queueplayer"],
+  "ios": {
+    "iosModuleName": "QueuePlayer"
+  },
+  "android": {
+    "androidNamespace": ["queueplayer"],
+    "androidCxxLibName": "queueplayer"
+  },
+  "autolinking": {
+    "TrackPlayer": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "TrackPlayer"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "TrackPlayer"
+      }
+    },
+    "Equalizer": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "Equalizer"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "Equalizer"
+      }
+    },
+    "Visualizer": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "Visualizer"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "Visualizer"
+      }
+    },
+    "CastManager": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "CastManager"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "CastManager"
+      }
+    }
+  },
+  "ignorePaths": ["node_modules"]
+}

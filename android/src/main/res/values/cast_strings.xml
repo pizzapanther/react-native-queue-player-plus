@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!--
+    Default Chromecast receiver application ID. Host apps override by
+    declaring their own `<string name="queue_player_chromecast_receiver_app_id">`
+    in their `res/values/strings.xml` — Android resource merge takes
+    the host value over ours.
+
+    CC1AD845 is Google's Default Media Receiver — handles MP4/MP3/HLS
+    with no custom receiver code. Custom-receiver integrations replace
+    this with their registered receiver app ID from the Cast Developer
+    Console.
+  -->
+  <string name="queue_player_chromecast_receiver_app_id" translatable="false">CC1AD845</string>
+</resources>

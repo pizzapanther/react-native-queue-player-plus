@@ -1,0 +1,121 @@
+import { useEffect, useRef, useState } from 'react';
+import { getVisualizer } from '../clients';
+import type {
+  VisualizerConfig,
+  VisualizerErrorReason,
+  VisualizerFrame as BridgeVisualizerFrame,
+} from '../types';
+
+export interface VisualizerState {
+  /**
+   * Float32Array view over the FFT magnitudes. Length = `fftSize / 2`.
+   * `null` until the first frame lands.
+   */
+  fft: Float32Array | null;
+  /**
+   * Float32Array view over the raw PCM samples. Length = `fftSize`.
+   * `null` unless the subscription was opened with
+   * `config.includeSamples === true` AND a frame has landed.
+   */
+  samples: Float32Array | null;
+  /** Stream sample rate in Hz, or 0 before any frame lands. */
+  sampleRate: number;
+  /** True once any frame has landed and no error reason is active. */
+  available: boolean;
+  /** Last-reported error reason, or `null` if frames are flowing. */
+  reason: VisualizerErrorReason | null;
+}
+
+const INITIAL: VisualizerState = {
+  fft: null,
+  samples: null,
+  sampleRate: 0,
+  available: false,
+  reason: null,
+};
+
+/**
+ * Subscribe to the Visualizer for the lifetime of the hook + surface
+ * the latest frame as plain React state at `sampleRateHz` cadence
+ * (default 30 Hz).
+ *
+ * The native bridge fires frames at `config.updateIntervalMs` (the
+ * audio render thread cadence — typically 60+ Hz). Throttling to
+ * 30 Hz on the React side keeps re-render pressure manageable; ~25
+ * FPS is enough for the visualizer aesthetic and renders smoothly
+ * on 60 Hz screens.
+ *
+ * The subscription re-creates only on primitive `config` field
+ * changes — passing an inline literal each render is safe.
+ *
+ * Effects cleanly: when the hook unmounts, the disposer runs; when
+ * no other subscribers are live, the native layer pauses FFT
+ * processing.
+ */
+export function useVisualizerState(
+  config: VisualizerConfig,
+  sampleRateHz: number = 30,
+): VisualizerState {
+  const [state, setState] = useState<VisualizerState>(INITIAL);
+  // Pull primitive config fields into local scope so the effect dep
+  // array can list them directly — passing an inline `config` object
+  // each render would re-fire the effect on every parent re-render.
+  const { fftSize, updateIntervalMs, includeSamples } = config;
+
+  // Latest frame held in a ref so the audio-thread bridge callback
+  // doesn't trigger a React re-render per frame. The throttle
+  // interval below pulls from the ref. `frameEpochRef` increments
+  // once per native frame so the throttle can detect "no new frame
+  // since last setState" and skip the re-render entirely.
+  const latestFrameRef = useRef<BridgeVisualizerFrame | null>(null);
+  const latestReasonRef = useRef<VisualizerErrorReason | null>(null);
+  const frameEpochRef = useRef(0);
+
+  useEffect(() => {
+    const viz = getVisualizer();
+    const dispose = viz.subscribe(
+      { fftSize, updateIntervalMs, includeSamples },
+      (frame) => {
+        latestFrameRef.current = frame;
+        latestReasonRef.current = null;
+        frameEpochRef.current += 1;
+      },
+      (reason) => {
+        latestReasonRef.current = reason;
+      },
+    );
+
+    const intervalMs = Math.max(16, Math.round(1000 / sampleRateHz));
+    let lastSeenEpoch = 0;
+    let lastSeenReason: VisualizerErrorReason | null = null;
+    const timer = setInterval(() => {
+      const frame = latestFrameRef.current;
+      const reason = latestReasonRef.current;
+      const epoch = frameEpochRef.current;
+      if (frame && epoch !== lastSeenEpoch) {
+        lastSeenEpoch = epoch;
+        lastSeenReason = reason;
+        setState({
+          fft: new Float32Array(frame.fft),
+          samples: frame.samples ? new Float32Array(frame.samples) : null,
+          sampleRate: frame.sampleRate,
+          available: reason === null,
+          reason,
+        });
+      } else if (reason && reason !== lastSeenReason) {
+        lastSeenReason = reason;
+        setState((prev) => ({ ...prev, reason, available: false }));
+      }
+    }, intervalMs);
+
+    return () => {
+      clearInterval(timer);
+      dispose();
+      latestFrameRef.current = null;
+      latestReasonRef.current = null;
+      frameEpochRef.current = 0;
+    };
+  }, [fftSize, updateIntervalMs, includeSamples, sampleRateHz]);
+
+  return state;
+}

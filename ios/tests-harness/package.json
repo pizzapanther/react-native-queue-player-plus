@@ -1,0 +1,10 @@
+{
+  "name": "rnqp-tests-harness",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Minimal consumer-shaped package for the QueuePlayer XCTest harness. Lists only the native deps that CocoaPods' use_react_native! + RN codegen walk during pod install (react-native + react-native-nitro-modules). The tests-harness/node_modules symlink points at the library's real node_modules so these resolve without a separate npm install.",
+  "dependencies": {
+    "react-native": "*",
+    "react-native-nitro-modules": "*"
+  }
+}

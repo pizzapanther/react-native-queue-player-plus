@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Notification channel name surfaced in system Settings (Settings >
+       Apps > <app> > Notifications). User-visible, so keep it concise
+       and product-neutral. -->
+  <string name="rnqp_playback_channel_name">Playback</string>
+  <!-- Channel description shown beneath the channel name in Settings.
+       Explains what notifications on this channel are used for. -->
+  <string name="rnqp_playback_channel_description">Audio playback controls</string>
+  <!-- Accessibility / legacy-controller label for the previous-track
+       transport button. Shown by TalkBack and by pre-Media3 controllers
+       that read the platform PlaybackStateCompat custom-action name. -->
+  <string name="rnqp_action_previous">Previous</string>
+  <!-- Accessibility / legacy-controller label for the next-track
+       transport button. -->
+  <string name="rnqp_action_next">Next</string>
+  <!-- Accessibility / legacy-controller labels for the interval-skip
+       (jump forward / back) transport buttons. -->
+  <string name="rnqp_action_jump_backward">Skip back</string>
+  <string name="rnqp_action_jump_forward">Skip forward</string>
+</resources>
