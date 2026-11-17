@@ -34,9 +34,10 @@
     "!**/.*"
   ],
   "scripts": {
+    "build": "bob build",
     "clean": "del-cli android/build lib nitrogen",
     "prepare": "bob build",
-    "nitrogen": "nitrogen && bash scripts/strip-nitrogen-unused-let.sh",
+    "nitrogen": "nitrogen",
     "typecheck": "tsc",
     "test": "jest",
     "test:coverage": "jest --coverage",
