@@ -4,6 +4,9 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.test.core.app.ApplicationProvider
+import com.margelo.nitro.queueplayer.cast.FakeRemotePlayer
+import com.margelo.nitro.queueplayer.cast.PlaybackStateRouter
+import com.margelo.nitro.queueplayer.cast.RemotePlaybackState
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -39,7 +42,7 @@ class TrackPlayerEventsTest {
   private fun context() = ApplicationProvider.getApplicationContext<android.content.Context>()
 
   private fun track(id: String) = TrackItem(
-    id = id, url = "https://example.com/$id.m4a",
+    id = id, url = "file:///queue-player-test/$id.m4a",
     title = null, artist = null, album = null,
     duration = null, artworkUrl = null, extras = null,
     replayGainTrackGain = null, replayGainTrackPeak = null,
@@ -59,6 +62,7 @@ class TrackPlayerEventsTest {
 
   @After
   fun tearDown() {
+    PlaybackStateRouter.setActive(null)
     player.destroyInternal()
     serviceHandle.destroy()
   }
@@ -92,6 +96,9 @@ class TrackPlayerEventsTest {
 
   @Test
   fun `onProgress subscription returns an unsubscribe closure that clears the callback`() {
+    val remote = FakeRemotePlayer()
+    remote.reportState(RemotePlaybackState.PLAYING)
+    PlaybackStateRouter.setActive(remote)
     val received = mutableListOf<PlayerProgress>()
     val unsubscribe = player.onProgress { p -> received.add(p) }
 
@@ -104,7 +111,7 @@ class TrackPlayerEventsTest {
     assertEquals(1, received.size)
 
     unsubscribe()
-
+    org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMillis(1000))
     player.emitProgressTick()
     assertEquals(
       "unsubscribe must clear the callback — no further ticks dispatch",
@@ -113,18 +120,14 @@ class TrackPlayerEventsTest {
   }
 
   @Test
-  fun `emitProgressTick reports 0 duration when the player has no timeline`() {
+  fun `emitProgressTick is silent when the player has no timeline`() {
     var last: PlayerProgress? = null
     player.onProgress { p -> last = p }
 
     player.emitProgressTick()
 
-    // Empty player — currentPosition is 0, duration is C.TIME_UNSET.
-    val snap = last
-    assertNotNull(snap)
-    assertEquals(0.0, snap!!.position, 0.001)
-    assertEquals(0.0, snap.duration, 0.001)
-    assertEquals(0.0, snap.buffered, 0.001)
+    assertEquals(null, last)
+    assertEquals(PlayerProgress(0.0, 0.0, 0.0), player.getProgress())
   }
 
   // --- onStateChange / onError / onQueueEnd registration
@@ -347,8 +350,8 @@ class TrackPlayerEventsTest {
     //   - listener must NOT clobber the logical -1 from the Kotlin
     //     side with the ExoPlayer-derived 0
     player.tracks = listOf(
-      TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null),
-      TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("a", "file:///queue-player-test/a.m4a", null, null, null, null, null, null, null, null, null, null),
+      TrackItem("b", "file:///queue-player-test/b.m4a", null, null, null, null, null, null, null, null, null, null)
     )
     player.currentTrackIndex = -1
 
@@ -368,7 +371,7 @@ class TrackPlayerEventsTest {
     // before issuing player.seekTo — the subsequent REASON_SEEK
     // listener fire must not reset it from the player.
     player.tracks = (1..5).map {
-      TrackItem("t$it", "https://example.com/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
     }
     player.currentTrackIndex = 3
 
@@ -382,7 +385,7 @@ class TrackPlayerEventsTest {
   @Test
   fun `handleMediaItemTransition REASON_SEEK consumes the pending track change reason`() {
     player.tracks = (1..5).map {
-      TrackItem("t$it", "https://example.com/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
     }
     player.currentTrackIndex = 2
 
@@ -406,7 +409,7 @@ class TrackPlayerEventsTest {
   @Test
   fun `handleMediaItemTransition REASON_SEEK without stashed reason falls back to SEEK`() {
     player.tracks = (1..5).map {
-      TrackItem("t$it", "https://example.com/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
     }
     player.currentTrackIndex = 2
 
@@ -422,11 +425,11 @@ class TrackPlayerEventsTest {
 
   @Test
   fun `handleMediaItemTransition fires callback with current track snapshot`() {
-    val t2 = TrackItem("t2", "https://example.com/t2.m4a", null, null, null, null, null, null, null, null, null, null)
+    val t2 = TrackItem("t2", "file:///queue-player-test/t2.m4a", null, null, null, null, null, null, null, null, null, null)
     player.tracks = listOf(
-      TrackItem("t1", "https://example.com/t1.m4a", null, null, null, null, null, null, null, null, null, null),
+      TrackItem("t1", "file:///queue-player-test/t1.m4a", null, null, null, null, null, null, null, null, null, null),
       t2,
-      TrackItem("t3", "https://example.com/t3.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t3", "file:///queue-player-test/t3.m4a", null, null, null, null, null, null, null, null, null, null)
     )
     player.currentTrackIndex = 1
 
@@ -454,8 +457,8 @@ class TrackPlayerEventsTest {
   @Test
   fun `handleMediaItemTransition PLAYLIST_CHANGED reports null transitionGapMs`() {
     player.tracks = listOf(
-      TrackItem("t1", "https://example.com/t1.m4a", null, null, null, null, null, null, null, null, null, null),
-      TrackItem("t2", "https://example.com/t2.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t1", "file:///queue-player-test/t1.m4a", null, null, null, null, null, null, null, null, null, null),
+      TrackItem("t2", "file:///queue-player-test/t2.m4a", null, null, null, null, null, null, null, null, null, null)
     )
     player.currentTrackIndex = 0
 
@@ -477,7 +480,7 @@ class TrackPlayerEventsTest {
   @Test
   fun `handleMediaItemTransition SEEK reports null transitionGapMs`() {
     player.tracks = (1..3).map {
-      TrackItem("t$it", "https://example.com/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
     }
     player.currentTrackIndex = 1
 
@@ -496,7 +499,7 @@ class TrackPlayerEventsTest {
   @Test
   fun `maybeEmitQueueEnd does nothing on non-ENDED states`() {
     player.tracks = listOf(
-      TrackItem("t1", "https://example.com/t1.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t1", "file:///queue-player-test/t1.m4a", null, null, null, null, null, null, null, null, null, null)
     )
     var queueEndFires = 0
     player.onQueueEnd { queueEndFires += 1 }
@@ -526,7 +529,7 @@ class TrackPlayerEventsTest {
   @Test
   fun `maybeEmitQueueEnd fires queueEnd and ENDED state on STATE_ENDED with tracks`() {
     player.tracks = (1..3).map {
-      TrackItem("t$it", "https://example.com/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
     }
 
     var queueEndFires = 0
@@ -551,7 +554,7 @@ class TrackPlayerEventsTest {
   fun `emitStateIfChanged defaults pending reason to SYSTEM on terminal state`() {
     player.setQueueInternal(
       (1..1).map {
-        TrackItem("t$it", "https://example.com/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
+        TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
       }
     )
     // Manually reset dedup so the next call emits

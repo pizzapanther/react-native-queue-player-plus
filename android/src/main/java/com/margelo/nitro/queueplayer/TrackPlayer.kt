@@ -4842,12 +4842,15 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   @MainThread
   internal fun emitProgressTick() {
     if (progressListeners.isEmpty) return
-    // Throttle the JS fan-out to the configured cadence. Covers all three emit
-    // paths below (cast, empty-queue, local). Milestones + fully-buffered run
-    // as separate calls in the tick runnable, so they stay full-rate.
+    val remote = com.margelo.nitro.queueplayer.cast.PlaybackStateRouter.activeRemote()
+    if (remote != null) {
+      if (remote.state.value != com.margelo.nitro.queueplayer.cast.RemotePlaybackState.PLAYING) return
+    } else {
+      if (tracks.isEmpty() || currentTrackIndex < 0 || serviceBinder?.engine?.isPlaying != true) return
+    }
+    // Inactive ticks must not consume the cadence gate. Buffer and milestone
+    // work still runs separately in the tick runnable.
     if (!progressEmissionGate.shouldEmit(SystemClock.uptimeMillis())) return
-    if (serviceBinder?.engine == null &&
-      com.margelo.nitro.queueplayer.cast.PlaybackStateRouter.activeRemote() == null) return
     val progress = readProgress()
     progressListeners.forEach { it(progress) }
   }

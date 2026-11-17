@@ -67,7 +67,7 @@ class TrackPlayerReadersTest {
   }
 
   @Test
-  fun `getProgress reads paused position without subscribers and does not consume the next event`() {
+  fun `getProgress reads paused position without subscribers while progress events stay silent`() {
     val track = TrackItem(
       id = "local", url = "file:///queue-player-test/progress.m4a",
       title = null, artist = null, album = null, duration = null, artworkUrl = null,
@@ -85,7 +85,11 @@ class TrackPlayerReadersTest {
     assertEquals(snapshot, player.getProgress())
     assertTrue(seen.isEmpty())
     player.emitProgressTick()
-    assertEquals(listOf(snapshot), seen)
+    assertTrue(seen.isEmpty())
+    serviceHandle.engine.seekTo(0, 20_000)
+    player.emitProgressTick()
+    assertTrue(seen.isEmpty())
+    assertEquals(20.0, player.getProgress().position, 0.001)
     dispose()
 
     player.clearQueueInternal()

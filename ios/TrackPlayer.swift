@@ -388,10 +388,6 @@ class TrackPlayer: HybridTrackPlayerSpec {
   /// swap to a non-AVQueuePlayer backend; stopped on swap back to
   /// gapless or on destroy.
   internal var progressFallbackTimer: DispatchSourceTimer?
-  /// Last position published by the CrossfadeEngine fallback-timer progress
-  /// path. Lets a paused tick emit once when the playhead moves (seek / stop)
-  /// without re-publishing identical tuples during a steady pause.
-  internal var lastEmittedCrossfadePosition: TimeInterval = -1
 
   /// KVO on `player.timeControlStatus`. Fires whenever AVPlayer
   /// transitions between `.paused`, `.waitingToPlayAtSpecifiedRate`,

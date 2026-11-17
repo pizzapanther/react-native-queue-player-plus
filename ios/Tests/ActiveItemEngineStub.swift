@@ -17,7 +17,7 @@ final class ActiveItemEngineStub: PlaybackEngine {
   var currentPositionSeconds: TimeInterval = 0
   var currentDurationSeconds: TimeInterval = 0
   var bufferedPositionSeconds: TimeInterval = 0
-  var isPlaying: Bool { false }
+  var isPlaying: Bool = false
   var timeControlStatus: AVPlayer.TimeControlStatus { .paused }
   var delegate: PlaybackEngineDelegate?
 

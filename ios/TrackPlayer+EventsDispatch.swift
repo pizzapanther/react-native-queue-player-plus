@@ -318,8 +318,8 @@ extension TrackPlayer {
   /// `engine.currentPositionSeconds` / `currentDurationSeconds` /
   /// `bufferedPositionSeconds` (computed properties on the
   /// engine surface that delegate to whichever leg is leading).
-  /// Shared by the snapshot getter and event emitter. Does not touch cadence
-  /// or crossfade movement bookkeeping, so reads cannot suppress a later event.
+  /// Shared by the snapshot getter and event emitter. Does not touch cadence,
+  /// so reads cannot suppress a later event.
   internal func localProgressSnapshot() -> PlayerProgress {
     let position: TimeInterval
     let duration: TimeInterval
@@ -343,25 +343,13 @@ extension TrackPlayer {
   }
 
   internal func emitProgressIfSubscribed() {
-    guard !progressListeners.isEmpty else { return }
+    guard !progressListeners.isEmpty,
+          PlaybackStateRouter.shared.activeRemote() == nil,
+          !tracks.isEmpty, currentTrackIndex >= 0,
+          engine?.isPlaying == true else { return }
+    // Check playback before the gate so paused seeks cannot consume cadence.
+    guard self.progressEmissionGate.shouldEmit(nowMs: self.monotonicNowMs()) else { return }
     let progress = localProgressSnapshot()
-    let isPlaying: Bool
-    if self.player?.currentItem != nil {
-      isPlaying = (self.player?.rate ?? 0) != 0
-    } else if let engine = self.engine {
-      // Paused crossfade ticks emit only for a seek/stop/rewind. The getter
-      // must not advance this marker or consume that pending event.
-      let moved = Swift.abs(progress.position - self.lastEmittedCrossfadePosition) > 0.001
-      guard engine.isPlaying || moved else { return }
-      self.lastEmittedCrossfadePosition = progress.position
-      isPlaying = engine.isPlaying
-    } else {
-      return
-    }
-    // Paused ticks report discrete movements immediately; throttle only playback.
-    guard !isPlaying || self.progressEmissionGate.shouldEmit(nowMs: self.monotonicNowMs()) else {
-      return
-    }
     progressListeners.forEach { $0(progress) }
   }
 
@@ -680,7 +668,8 @@ extension TrackPlayer {
   private func emitRemoteProgressOnQueue(
     positionMs: Int64, durationMs: Int64, bufferedMs: Int64
   ) {
-    guard !progressListeners.isEmpty else { return }
+    guard !progressListeners.isEmpty,
+          PlaybackStateRouter.shared.activeRemote()?.lastState == .playing else { return }
     // Same throttle as the local tick, shared instance — a consumer's
     // configured cadence caps cast progress too (the receiver pushes at its own
     // rate, so the effective cadence is min(receiver rate, configured interval)).

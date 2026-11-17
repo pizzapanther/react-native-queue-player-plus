@@ -145,7 +145,6 @@ extension TrackPlayer {
   /// repeat calls drop the prior timer first.
   internal func startProgressFallbackTimer() {
     stopProgressFallbackTimer()
-    self.lastEmittedCrossfadePosition = -1
     let timer = DispatchSource.makeTimerSource(queue: playerQueue)
     timer.schedule(
       deadline: .now() + Self.progressIntervalSeconds,

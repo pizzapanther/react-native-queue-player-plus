@@ -61,6 +61,7 @@ class TrackPlayerCastStateTest {
 
   @Test
   fun `getProgress uses receiver values without a local queue or subscription`() {
+    remote.reportState(RemotePlaybackState.PLAYING)
     remote.backingPositionMs.value = 12_500
     remote.backingDurationMs.value = 90_000
     PlaybackStateRouter.setActive(remote)

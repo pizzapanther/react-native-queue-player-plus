@@ -117,6 +117,10 @@ values are seconds, and `buffered` is the amount buffered ahead of `position`.
 It works while paused and uses receiver progress during casting. Unknown
 duration or buffered amount is `0`; an inactive local queue returns all zeros.
 
+`onProgress` emits only while a track is actively playing, locally or on a
+cast receiver. Pausing, buffering, stopping, ending, or seeking while paused
+does not emit progress; use `getProgress()` for those snapshots.
+
 ### Timed stream metadata
 
 Subscribe to title, artist, album title, and artwork updates carried in the

@@ -2,6 +2,9 @@ package com.margelo.nitro.queueplayer
 
 import androidx.media3.common.util.UnstableApi
 import androidx.test.core.app.ApplicationProvider
+import com.margelo.nitro.queueplayer.cast.FakeRemotePlayer
+import com.margelo.nitro.queueplayer.cast.PlaybackStateRouter
+import com.margelo.nitro.queueplayer.cast.RemotePlaybackState
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -26,6 +29,7 @@ import java.time.Duration
 @UnstableApi
 class TrackPlayerProgressThrottleTest {
 
+  private val remote = FakeRemotePlayer()
   private lateinit var player: TrackPlayer
   private lateinit var serviceHandle: PlaybackServiceTestHandle
 
@@ -45,10 +49,15 @@ class TrackPlayerProgressThrottleTest {
   fun setUp() {
     player = TrackPlayer()
     serviceHandle = bindPlaybackServiceForTest(player, context())
+    // A controllable playing receiver exercises the real tick and cadence
+    // without requiring Robolectric to decode audio to STATE_READY.
+    remote.reportState(RemotePlaybackState.PLAYING)
+    PlaybackStateRouter.setActive(remote)
   }
 
   @After
   fun tearDown() {
+    PlaybackStateRouter.setActive(null)
     player.destroyInternal()
     serviceHandle.destroy()
   }
@@ -89,4 +98,29 @@ class TrackPlayerProgressThrottleTest {
     player.configureInternal(config(foregroundMs = 200.0), context())
     assertEquals(10, countEmitsOverTicks(tickCount = 10, tickPeriodMs = 500))
   }
+  @Test
+  fun `inactive receiver states stay silent without consuming the next playing tick`() {
+    player.configureInternal(config(foregroundMs = 1000.0), context())
+    val received = mutableListOf<PlayerProgress>()
+    val dispose = player.onProgress { received.add(it) }
+    for (state in RemotePlaybackState.entries.filter { it != RemotePlaybackState.PLAYING }) {
+      remote.reportState(state)
+      remote.backingPositionMs.value += 1000
+      player.emitProgressTick()
+    }
+    assertTrue(received.isEmpty())
+    // No clock advance: the skipped ticks must not spend the first emit slot.
+    remote.reportState(RemotePlaybackState.PLAYING)
+    player.emitProgressTick()
+    assertEquals(1, received.size)
+    remote.reportState(RemotePlaybackState.PAUSED)
+    ShadowSystemClock.advanceBy(Duration.ofMillis(1000))
+    player.emitProgressTick()
+    assertEquals(1, received.size)
+    remote.reportState(RemotePlaybackState.PLAYING)
+    player.emitProgressTick()
+    assertEquals(2, received.size)
+    dispose()
+  }
+
 }

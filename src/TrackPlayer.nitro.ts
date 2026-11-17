@@ -452,7 +452,10 @@ export interface TrackPlayer
     ) => void
   ): () => void;
   /**
-   * Subscribes to playback-progress ticks. Native side fires at ~2 Hz
+   * Subscribes to progress ticks only while a track is actively playing,
+   * including on a cast receiver. Paused, buffering, stopped, ended, and
+   * empty players do not emit, including seeks while paused. Use
+   * `getProgress()` for a snapshot in those states. Native side fires at ~2 Hz
    * via `addPeriodicTimeObserver` (iOS) / a coroutine-driven handler
    * (Android). Payload is a `PlayerProgress` struct so the callback
    * shape can grow new fields without a breaking change.
