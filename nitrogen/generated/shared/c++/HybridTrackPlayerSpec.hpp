@@ -17,6 +17,8 @@
 namespace margelo::nitro::queueplayer { struct PlayerConfig; }
 // Forward declaration of `TrackItem` to properly resolve imports.
 namespace margelo::nitro::queueplayer { struct TrackItem; }
+// Forward declaration of `TrackMetadataUpdate` to properly resolve imports.
+namespace margelo::nitro::queueplayer { struct TrackMetadataUpdate; }
 // Forward declaration of `PlaybackMode` to properly resolve imports.
 namespace margelo::nitro::queueplayer { struct PlaybackMode; }
 // Forward declaration of `PitchCorrectionMode` to properly resolve imports.
@@ -75,6 +77,7 @@ namespace margelo::nitro::queueplayer { struct NowPlayingFormat; }
 #include "TrackItem.hpp"
 #include <vector>
 #include <optional>
+#include "TrackMetadataUpdate.hpp"
 #include "PlaybackMode.hpp"
 #include "PitchCorrectionMode.hpp"
 #include "RepeatMode.hpp"
@@ -140,6 +143,7 @@ namespace margelo::nitro::queueplayer {
       virtual std::shared_ptr<Promise<void>> configure(const PlayerConfig& config) = 0;
       virtual std::shared_ptr<Promise<void>> destroy() = 0;
       virtual std::shared_ptr<Promise<void>> setQueue(const std::vector<TrackItem>& tracks, std::optional<double> startAtIndex) = 0;
+      virtual std::shared_ptr<Promise<void>> updateMetadata(double index, const TrackMetadataUpdate& metadata) = 0;
       virtual std::shared_ptr<Promise<void>> addToQueue(const std::vector<TrackItem>& tracks, std::optional<double> insertBefore) = 0;
       virtual std::shared_ptr<Promise<void>> removeFromQueue(const std::vector<double>& indices) = 0;
       virtual std::shared_ptr<Promise<void>> moveInQueue(double fromIndex, double toIndex) = 0;

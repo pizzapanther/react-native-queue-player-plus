@@ -17,6 +17,13 @@ export function applyQueueDelta(
       return delta.inserted.slice();
     case 'clear':
       return [];
+    case 'update-metadata': {
+      const next = previous.slice();
+      if (delta.insertedAt >= 0 && delta.insertedAt < next.length && delta.inserted[0]) {
+        next[delta.insertedAt] = delta.inserted[0];
+      }
+      return next;
+    }
     case 'add': {
       const next = previous.slice();
       next.splice(delta.insertedAt, 0, ...delta.inserted);

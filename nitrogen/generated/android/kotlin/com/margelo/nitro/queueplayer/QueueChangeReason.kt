@@ -21,7 +21,8 @@ enum class QueueChangeReason(@DoNotStrip @Keep val value: Int) {
   REMOVE(2),
   MOVE(3),
   CLEAR(4),
-  SHUFFLE(5);
+  SHUFFLE(5),
+  UPDATE_METADATA(6);
 
   companion object
 }

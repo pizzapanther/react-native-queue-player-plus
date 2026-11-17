@@ -45,6 +45,10 @@ abstract class HybridTrackPlayerSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
+  abstract fun updateMetadata(index: Double, metadata: TrackMetadataUpdate): Promise<Unit>
+  
+  @DoNotStrip
+  @Keep
   abstract fun addToQueue(tracks: Array<TrackItem>, insertBefore: Double?): Promise<Unit>
   
   @DoNotStrip

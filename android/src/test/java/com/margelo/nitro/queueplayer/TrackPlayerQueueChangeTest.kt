@@ -39,7 +39,8 @@ class TrackPlayerQueueChangeTest {
     ApplicationProvider.getApplicationContext<android.content.Context>()
 
   private fun track(id: String) = TrackItem(
-    id = id, url = "https://example.com/$id.m4a",
+    // Queue assertions need no network media; avoid TLS/provider work in Robolectric.
+    id = id, url = "file:///queue-player-test/$id.m4a",
     title = null, artist = null, album = null,
     duration = null, artworkUrl = null, extras = null,
     replayGainTrackGain = null, replayGainTrackPeak = null,
@@ -96,6 +97,76 @@ class TrackPlayerQueueChangeTest {
       add(delta.movedTo.toInt(), removeAt(delta.movedFrom.toInt()))
     }
     QueueChangeReason.SHUFFLE -> delta.order.map { previous[it.toInt()] }
+    QueueChangeReason.UPDATE_METADATA -> previous.toMutableList().apply {
+      this[delta.insertedAt.toInt()] = delta.inserted.single()
+    }
+  }
+
+  @Test
+  fun `metadata patch preserves identity playback position and unrelated fields`() {
+    val original = track("rich").copy(title = "Old", artist = "Artist", album = "Album",
+      artworkUrl = "https://example.com/old.jpg", duration = 123.0,
+      extras = mapOf("key" to "value"), replayGainTrackGain = -4.0)
+    player.setQueueInternal(listOf(original, track("next")))
+    val engine = serviceHandle.engine
+    engine.seekTo(0, 12_000)
+    val (events, dispose) = capture()
+    var trackChanges = 0
+    val offTrack = player.onTrackChange { _, _, _, _ -> trackChanges++ }
+    val before = engine.currentMediaItem!!
+    player.updateMetadataInternal(0.0, TrackMetadataUpdate("New", null, "New album", null))
+    val expected = original.copy(title = "New", album = "New album")
+    assertEquals(expected, player.tracks[0])
+    assertEquals(expected, events.single().queue[0])
+    assertEquals(QueueChangeReason.UPDATE_METADATA, events.single().reason)
+    assertEquals(0.0, events.single().delta.insertedAt, 0.0)
+    assertEquals(2, events.single().queue.size)
+    assertEquals(0, trackChanges)
+    assertEquals(0, engine.currentMediaItemIndex)
+    assertEquals(12_000L, engine.currentPositionMs)
+    assertEquals(before.localConfiguration, engine.currentMediaItem!!.localConfiguration)
+    assertEquals(before.mediaId, engine.currentMediaItem!!.mediaId)
+    assertEquals("New", engine.currentMediaItem!!.mediaMetadata.title.toString())
+    assertEquals("New album", engine.currentMediaItem!!.mediaMetadata.albumTitle.toString())
+    assertEquals(before.mediaMetadata.artworkUri, engine.currentMediaItem!!.mediaMetadata.artworkUri)
+    assertEquals(before.mediaMetadata.durationMs, engine.currentMediaItem!!.mediaMetadata.durationMs)
+    dispose()
+    offTrack()
+  }
+
+  @Test
+  fun `metadata patch works for nonactive entries and empty strings clear fields`() {
+    val (events, dispose) = capture()
+    val current = serviceHandle.engine.currentMediaItem
+    player.updateMetadataInternal(2.0, TrackMetadataUpdate("Name", "Artist", "Album", "https://example.com/a.jpg"))
+    player.updateMetadataInternal(2.0, TrackMetadataUpdate("", "", "", ""))
+    assertEquals("", player.tracks[2].title)
+    assertEquals("", player.tracks[2].artist)
+    assertEquals("", player.tracks[2].album)
+    assertEquals("", player.tracks[2].artworkUrl)
+    assertEquals(2, events.size)
+    assertEquals(player.tracks, events.last().queue)
+    assertEquals(current, serviceHandle.engine.currentMediaItem)
+    val art = serviceHandle.engine.allMediaItems[2].mediaMetadata.artworkUri!!
+    assertEquals("android.resource", art.scheme)
+    dispose()
+  }
+
+  @Test
+  fun `invalid indices empty patches and unchanged metadata emit nothing`() {
+    val (events, dispose) = capture()
+    val before = player.tracks.toList()
+    val patch = TrackMetadataUpdate("New", null, null, null)
+    for (index in listOf(-1.0, 0.5, 5.0, Double.NaN, Double.POSITIVE_INFINITY, Double.MAX_VALUE)) {
+      player.updateMetadataInternal(index, patch)
+    }
+    player.updateMetadataInternal(0.0, TrackMetadataUpdate(null, null, null, null))
+    assertEquals(before, player.tracks)
+    assertTrue(events.isEmpty())
+    player.updateMetadataInternal(0.0, patch)
+    player.updateMetadataInternal(0.0, patch)
+    assertEquals(1, events.size)
+    dispose()
   }
 
   @Test

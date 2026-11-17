@@ -7,7 +7,8 @@ export interface ActiveTrackSnapshot {
     reason: TrackChangeReason;
 }
 /**
- * Subscribes to native `onTrackChange` updates.
+ * Subscribes to native `onTrackChange` updates and active-entry metadata edits
+ * from `onQueueChange`.
  *
  * Renders empty for the first frame, then fills in: the seed reads
  * `getQueue()`, which resolves asynchronously, and pairs it with a separately

@@ -60,6 +60,9 @@ namespace margelo::nitro::queueplayer {
         case QueueChangeReason::SHUFFLE:
           static const auto fieldSHUFFLE = clazz->getStaticField<JQueueChangeReason>("SHUFFLE");
           return clazz->getStaticFieldValue(fieldSHUFFLE);
+        case QueueChangeReason::UPDATE_METADATA:
+          static const auto fieldUPDATE_METADATA = clazz->getStaticField<JQueueChangeReason>("UPDATE_METADATA");
+          return clazz->getStaticFieldValue(fieldUPDATE_METADATA);
         default:
           std::string stringValue = std::to_string(static_cast<int>(value));
           throw std::invalid_argument("Invalid enum value (" + stringValue + "!");

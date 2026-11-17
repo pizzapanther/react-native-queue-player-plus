@@ -9,6 +9,7 @@ export type {
   // Player
   TrackItem,
   TimedMetadata,
+  TrackMetadataUpdate,
   PlayerConfig,
   AudioContentType,
   AudioCategoryOptions,

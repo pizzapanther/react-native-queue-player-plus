@@ -35,6 +35,7 @@ namespace margelo::nitro::queueplayer {
     MOVE      SWIFT_NAME(move) = 3,
     CLEAR      SWIFT_NAME(clear) = 4,
     SHUFFLE      SWIFT_NAME(shuffle) = 5,
+    UPDATE_METADATA      SWIFT_NAME(updateMetadata) = 6,
   } CLOSED_ENUM;
 
 } // namespace margelo::nitro::queueplayer
@@ -53,6 +54,7 @@ namespace margelo::nitro {
         case hashString("move"): return margelo::nitro::queueplayer::QueueChangeReason::MOVE;
         case hashString("clear"): return margelo::nitro::queueplayer::QueueChangeReason::CLEAR;
         case hashString("shuffle"): return margelo::nitro::queueplayer::QueueChangeReason::SHUFFLE;
+        case hashString("update-metadata"): return margelo::nitro::queueplayer::QueueChangeReason::UPDATE_METADATA;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum QueueChangeReason - invalid value!");
       }
@@ -65,6 +67,7 @@ namespace margelo::nitro {
         case margelo::nitro::queueplayer::QueueChangeReason::MOVE: return JSIConverter<std::string>::toJSI(runtime, "move");
         case margelo::nitro::queueplayer::QueueChangeReason::CLEAR: return JSIConverter<std::string>::toJSI(runtime, "clear");
         case margelo::nitro::queueplayer::QueueChangeReason::SHUFFLE: return JSIConverter<std::string>::toJSI(runtime, "shuffle");
+        case margelo::nitro::queueplayer::QueueChangeReason::UPDATE_METADATA: return JSIConverter<std::string>::toJSI(runtime, "update-metadata");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert QueueChangeReason to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");
@@ -82,6 +85,7 @@ namespace margelo::nitro {
         case hashString("move"):
         case hashString("clear"):
         case hashString("shuffle"):
+        case hashString("update-metadata"):
           return true;
         default:
           return false;

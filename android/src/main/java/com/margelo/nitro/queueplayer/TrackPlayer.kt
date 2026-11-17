@@ -2064,6 +2064,28 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   override fun getQueue(): Promise<Array<TrackItem>> =
     Promise.async { onMain { tracks.toTypedArray() } }
 
+  override fun updateMetadata(index: Double, metadata: TrackMetadataUpdate): Promise<Unit> =
+    Promise.async { onMain { updateMetadataInternal(index, metadata) } }
+
+  @VisibleForTesting
+  internal fun updateMetadataInternal(index: Double, metadata: TrackMetadataUpdate) {
+    if (!index.isFinite() || index < 0 || index >= tracks.size || index % 1.0 != 0.0) return
+    val ctx = boundContext ?: return
+    val engine = serviceBinder?.engine ?: return
+    val position = index.toInt()
+    val old = tracks[position]
+    val updated = old.copy(
+      title = metadata.title ?: old.title,
+      artist = metadata.artist ?: old.artist,
+      album = metadata.albumTitle ?: old.album,
+      artworkUrl = metadata.artworkUrl ?: old.artworkUrl,
+    )
+    if (old == updated) return
+    tracks = tracks.toMutableList().apply { this[position] = updated }
+    engine.updateMetadata(position, MediaItemBuilder.buildMetadata(ctx, updated, config.placeholderArtworkUri))
+    emitQueueChange(QueueChangeReason.UPDATE_METADATA, inserted = arrayOf(updated), insertedAt = position)
+  }
+
   override fun clearQueue(): Promise<Unit> =
     Promise.async {
       // Clear the local source-of-truth queue, then mirror the clear to

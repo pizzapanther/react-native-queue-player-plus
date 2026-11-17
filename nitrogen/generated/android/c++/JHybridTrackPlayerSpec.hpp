@@ -57,6 +57,7 @@ namespace margelo::nitro::queueplayer {
     std::shared_ptr<Promise<void>> configure(const PlayerConfig& config) override;
     std::shared_ptr<Promise<void>> destroy() override;
     std::shared_ptr<Promise<void>> setQueue(const std::vector<TrackItem>& tracks, std::optional<double> startAtIndex) override;
+    std::shared_ptr<Promise<void>> updateMetadata(double index, const TrackMetadataUpdate& metadata) override;
     std::shared_ptr<Promise<void>> addToQueue(const std::vector<TrackItem>& tracks, std::optional<double> insertBefore) override;
     std::shared_ptr<Promise<void>> removeFromQueue(const std::vector<double>& indices) override;
     std::shared_ptr<Promise<void>> moveInQueue(double fromIndex, double toIndex) override;

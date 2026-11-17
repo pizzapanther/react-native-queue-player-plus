@@ -41,6 +41,50 @@ final class QueueStateTests: XCTestCase {
     XCTAssertEqual(state.queueItemIds.count, state.tracks.count)
   }
 
+  func testMetadataPatchPreservesIdentityAndPlaybackFields() throws {
+    var state = QueueState()
+    let original = TrackItem(
+      id: "station", url: "https://example.com/live", title: "Old", artist: "Artist", album: "Album",
+      duration: 42, artworkUrl: "https://example.com/art.jpg", extras: ["key": "value"],
+      replayGainTrackGain: -3, replayGainTrackPeak: 0.9,
+      replayGainAlbumGain: -2, replayGainAlbumPeak: 0.8)
+    let ids = state.replaceAll([original, track("other")])
+    let updated = try XCTUnwrap(state.updateMetadata(at: 0, metadata: TrackMetadataUpdate(
+      title: "New", artist: nil, albumTitle: "New album", artworkUrl: nil)))
+
+    XCTAssertEqual(updated.title, "New")
+    XCTAssertEqual(updated.album, "New album")
+    XCTAssertEqual(updated.artist, original.artist)
+    XCTAssertEqual(updated.artworkUrl, original.artworkUrl)
+    XCTAssertEqual(updated.id, original.id)
+    XCTAssertEqual(updated.url, original.url)
+    XCTAssertEqual(updated.duration, original.duration)
+    XCTAssertEqual(updated.extras, original.extras)
+    XCTAssertEqual(updated.replayGainTrackGain, original.replayGainTrackGain)
+    XCTAssertEqual(updated.replayGainTrackPeak, original.replayGainTrackPeak)
+    XCTAssertEqual(updated.replayGainAlbumGain, original.replayGainAlbumGain)
+    XCTAssertEqual(updated.replayGainAlbumPeak, original.replayGainAlbumPeak)
+    XCTAssertEqual(state.queueItemIds, ids)
+    XCTAssertEqual(state.tracks[1].url, "other")
+  }
+
+  func testMetadataPatchIgnoresMissingFieldsAndAllowsClearing() {
+    var state = QueueState()
+    _ = state.replaceAll([track("a")])
+    let empty = TrackMetadataUpdate(title: nil, artist: nil, albumTitle: nil, artworkUrl: nil)
+    XCTAssertNil(state.updateMetadata(at: 0, metadata: empty))
+    XCTAssertNil(state.updateMetadata(at: -1, metadata: empty))
+    XCTAssertNil(state.updateMetadata(at: 1, metadata: empty))
+
+    let clear = TrackMetadataUpdate(title: "", artist: "", albumTitle: "", artworkUrl: "")
+    XCTAssertNotNil(state.updateMetadata(at: 0, metadata: clear))
+    XCTAssertEqual(state.tracks[0].title, "")
+    XCTAssertEqual(state.tracks[0].artist, "")
+    XCTAssertEqual(state.tracks[0].album, "")
+    XCTAssertEqual(state.tracks[0].artworkUrl, "")
+    XCTAssertNil(state.updateMetadata(at: 0, metadata: clear))
+  }
+
   private func track(_ url: String) -> TrackItem {
     TrackItem(
       id: nil, url: url, title: nil, artist: nil, album: nil,

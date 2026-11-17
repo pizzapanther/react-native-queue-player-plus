@@ -131,6 +131,29 @@ system Now Playing metadata. Standard ID3 title/artist/album fields and custom
 artwork is exposed as a data URI. ICY `Artist - Title` is split at the first
 separator; a bare title remains a title. ICY `StreamUrl` is not treated as art.
 
+### Updating queue metadata
+
+Patch any queue entry without restarting playback:
+
+```ts
+await getTrackPlayer().updateMetadata(0, {
+  title: 'New title',
+  artist: 'New artist',
+  albumTitle: 'New album',
+  artworkUrl: 'https://example.com/artwork.jpg',
+});
+```
+
+All fields are optional; omitted fields keep their previous values. Use an
+empty string to clear a field (`artworkUrl: ''` restores the placeholder).
+`albumTitle` updates the queue item's `album` field. Invalid indices, empty
+patches, and unchanged values are ignored.
+
+Updates refresh `useQueue`, `useActiveTrack`, and the active item's system
+Now Playing metadata. `onQueueChange` reports `update-metadata`; neither
+`onTrackChange` nor `onTimedMetadata` fires. Cast receivers retain their own
+metadata until their media is reloaded.
+
 ## Manual configuration
 
 Most native setup is automatic (Nitro autolinking + the Android manifest merge + the Expo plugin). A few things you must do by hand — see the [Setup & manual configuration guide](https://ghenry22.github.io/react-native-queue-player/docs/guides/manual-setup) for full detail:

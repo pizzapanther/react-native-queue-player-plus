@@ -24,6 +24,8 @@ namespace margelo::nitro::queueplayer { enum class SkipToPreviousBehavior; }
 namespace margelo::nitro::queueplayer { enum class EvictionPolicy; }
 // Forward declaration of `TrackItem` to properly resolve imports.
 namespace margelo::nitro::queueplayer { struct TrackItem; }
+// Forward declaration of `TrackMetadataUpdate` to properly resolve imports.
+namespace margelo::nitro::queueplayer { struct TrackMetadataUpdate; }
 // Forward declaration of `PlaybackMode` to properly resolve imports.
 namespace margelo::nitro::queueplayer { struct PlaybackMode; }
 // Forward declaration of `PlaybackModeKind` to properly resolve imports.
@@ -118,6 +120,7 @@ namespace margelo::nitro::queueplayer { struct NowPlayingFormatAndroidExtras; }
 #include "EvictionPolicy.hpp"
 #include "TrackItem.hpp"
 #include <vector>
+#include "TrackMetadataUpdate.hpp"
 #include "PlaybackMode.hpp"
 #include "PlaybackModeKind.hpp"
 #include "PitchCorrectionMode.hpp"
@@ -231,6 +234,14 @@ namespace margelo::nitro::queueplayer {
     }
     inline std::shared_ptr<Promise<void>> setQueue(const std::vector<TrackItem>& tracks, std::optional<double> startAtIndex) override {
       auto __result = _swiftPart.setQueue(tracks, startAtIndex);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::shared_ptr<Promise<void>> updateMetadata(double index, const TrackMetadataUpdate& metadata) override {
+      auto __result = _swiftPart.updateMetadata(std::forward<decltype(index)>(index), std::forward<decltype(metadata)>(metadata));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

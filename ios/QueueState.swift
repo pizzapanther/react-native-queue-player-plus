@@ -58,4 +58,23 @@ internal struct QueueState {
     tracks.removeAll()
     queueItemIds.removeAll()
   }
+
+  /// Display-only patch. Keep the entry identity and every playback field.
+  mutating func updateMetadata(at index: Int, metadata: TrackMetadataUpdate) -> TrackItem? {
+    guard tracks.indices.contains(index) else { return nil }
+    let old = tracks[index]
+    let title = metadata.title ?? old.title
+    let artist = metadata.artist ?? old.artist
+    let album = metadata.albumTitle ?? old.album
+    let artwork = metadata.artworkUrl ?? old.artworkUrl
+    guard title != old.title || artist != old.artist || album != old.album
+      || artwork != old.artworkUrl else { return nil }
+    let updated = TrackItem(
+      id: old.id, url: old.url, title: title, artist: artist, album: album,
+      duration: old.duration, artworkUrl: artwork, extras: old.extras,
+      replayGainTrackGain: old.replayGainTrackGain, replayGainTrackPeak: old.replayGainTrackPeak,
+      replayGainAlbumGain: old.replayGainAlbumGain, replayGainAlbumPeak: old.replayGainAlbumPeak)
+    tracks[index] = updated
+    return updated
+  }
 }

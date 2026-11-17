@@ -17,7 +17,8 @@ const INITIAL: ActiveTrackSnapshot = {
 };
 
 /**
- * Subscribes to native `onTrackChange` updates.
+ * Subscribes to native `onTrackChange` updates and active-entry metadata edits
+ * from `onQueueChange`.
  *
  * Renders empty for the first frame, then fills in: the seed reads
  * `getQueue()`, which resolves asynchronously, and pairs it with a separately
@@ -52,9 +53,18 @@ export function useActiveTrack(): ActiveTrackSnapshot {
       seeded = true;
       setSnapshot({ track, index, reason });
     });
+    const disposeQueue = player.onQueueChange((delta, currentIndex, reason) => {
+      if (reason !== 'update-metadata' || delta.insertedAt !== currentIndex) return;
+      const track = delta.inserted[0];
+      if (!track) return;
+      // An edit arriving before getQueue resolves is newer than that seed.
+      seeded = true;
+      setSnapshot((previous) => ({ ...previous, track, index: currentIndex }));
+    });
     return () => {
       disposed = true;
       dispose();
+      disposeQueue();
     };
   }, []);
 

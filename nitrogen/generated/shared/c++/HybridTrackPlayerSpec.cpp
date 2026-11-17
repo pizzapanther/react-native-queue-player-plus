@@ -17,6 +17,7 @@ namespace margelo::nitro::queueplayer {
       prototype.registerHybridMethod("configure", &HybridTrackPlayerSpec::configure);
       prototype.registerHybridMethod("destroy", &HybridTrackPlayerSpec::destroy);
       prototype.registerHybridMethod("setQueue", &HybridTrackPlayerSpec::setQueue);
+      prototype.registerHybridMethod("updateMetadata", &HybridTrackPlayerSpec::updateMetadata);
       prototype.registerHybridMethod("addToQueue", &HybridTrackPlayerSpec::addToQueue);
       prototype.registerHybridMethod("removeFromQueue", &HybridTrackPlayerSpec::removeFromQueue);
       prototype.registerHybridMethod("moveInQueue", &HybridTrackPlayerSpec::moveInQueue);

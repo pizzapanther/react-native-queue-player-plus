@@ -689,6 +689,17 @@ internal class CrossfadeEngine(
 
   // --- PlaybackEngine: transport ---
 
+  override fun updateMetadata(index: Int, metadata: androidx.media3.common.MediaMetadata) {
+    // Both legs retain the full playlist. Update each copy without cancelling
+    // the fade or resetting the standby's preroll / active playback position.
+    for (player in listOf(playerA, playerB)) {
+      if (index in 0 until player.mediaItemCount) {
+        player.replaceMediaItem(index,
+          MediaItemBuilder.withDisplayMetadata(player.getMediaItemAt(index), metadata))
+      }
+    }
+  }
+
   override fun play() {
     // Request audio focus so the focusListener gets duck / loss
     // callbacks for as long as we're playing, but do NOT gate the

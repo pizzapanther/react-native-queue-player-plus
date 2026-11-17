@@ -30,6 +30,16 @@ export interface TimedMetadata {
   artworkUrl?: string;
 }
 
+/** Patch for a queue entry. Omitted fields keep their existing values. */
+export interface TrackMetadataUpdate {
+  title?: string;
+  artist?: string;
+  /** Stored as TrackItem.album. */
+  albumTitle?: string;
+  /** An empty string clears the artwork URL and restores the placeholder. */
+  artworkUrl?: string;
+}
+
 export interface TrackItem {
   /**
    * Optional consumer-supplied identifier. Echoed back to the consumer
@@ -578,7 +588,8 @@ export type QueueChangeReason =
   | 'remove' // removeFromQueue removed track(s)
   | 'move' // moveInQueue reordered a track
   | 'clear' // clearQueue emptied the queue
-  | 'shuffle'; // shuffleQueue reordered the queue
+  | 'shuffle' // shuffleQueue reordered the queue
+  | 'update-metadata'; // updateMetadata edited a queue entry in place
 
 /**
  * What a queue mutation did, delivered by `onQueueChange` alongside the reason.
@@ -605,14 +616,16 @@ export interface QueueChangeDelta {
   length: number;
   /**
    * Tracks now occupying `[insertedAt, insertedAt + inserted.length)`.
-   * Populated for `add` and `set-queue`; empty otherwise.
+   * Populated for `add` and `set-queue`. For `update-metadata`, contains the
+   * single updated track at `insertedAt`, replacing that entry without insertion.
+   * Empty for other reasons.
    *
    * `set-queue` carries the whole queue because the subscriber is not
    * necessarily whoever called `setQueue` — and on Android an assistant or
    * Android Auto request replaces the queue with tracks the app never passed in.
    */
   inserted: TrackItem[];
-  /** Where `inserted` begins, or `-1` when nothing was inserted. */
+  /** Where `inserted` begins (or the updated index), else `-1`. */
   insertedAt: number;
   /** Positions removed, ascending, as they were before the removal. */
   removed: number[];

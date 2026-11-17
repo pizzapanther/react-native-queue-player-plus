@@ -140,6 +140,8 @@ namespace margelo::nitro::queueplayer { struct TimedMetadata; }
 namespace margelo::nitro::queueplayer { enum class TrackChangeReason; }
 // Forward declaration of `TrackItem` to properly resolve imports.
 namespace margelo::nitro::queueplayer { struct TrackItem; }
+// Forward declaration of `TrackMetadataUpdate` to properly resolve imports.
+namespace margelo::nitro::queueplayer { struct TrackMetadataUpdate; }
 // Forward declaration of `TrackSource` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class TrackSource; }
 // Forward declaration of `VisualizerConfig` to properly resolve imports.
@@ -218,6 +220,7 @@ namespace margelo::nitro::queueplayer { struct VoiceVocabulary; }
 #include "TimedMetadata.hpp"
 #include "TrackChangeReason.hpp"
 #include "TrackItem.hpp"
+#include "TrackMetadataUpdate.hpp"
 #include "TrackSource.hpp"
 #include "VisualizerConfig.hpp"
 #include "VisualizerErrorReason.hpp"

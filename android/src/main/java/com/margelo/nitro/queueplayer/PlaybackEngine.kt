@@ -64,6 +64,13 @@ interface PlaybackEngine {
 
   fun moveMediaItem(fromIndex: Int, toIndex: Int)
 
+  /** Update display fields without replacing the media source or resetting playback. */
+  fun updateMetadata(index: Int, metadata: androidx.media3.common.MediaMetadata) {
+    val player = mediaSessionPlayer
+    if (index !in 0 until player.mediaItemCount) return
+    player.replaceMediaItem(index, MediaItemBuilder.withDisplayMetadata(player.getMediaItemAt(index), metadata))
+  }
+
   // Transport — synchronous on the service main looper.
   fun play()
   fun pause()

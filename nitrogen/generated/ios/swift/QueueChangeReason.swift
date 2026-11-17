@@ -29,6 +29,8 @@ public extension QueueChangeReason {
         self = .clear
       case "shuffle":
         self = .shuffle
+      case "update-metadata":
+        self = .updateMetadata
       default:
         return nil
     }
@@ -51,6 +53,8 @@ public extension QueueChangeReason {
         return "clear"
       case .shuffle:
         return "shuffle"
+      case .updateMetadata:
+        return "update-metadata"
     }
   }
 }

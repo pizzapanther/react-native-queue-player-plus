@@ -99,6 +99,19 @@ final class NowPlayingInfo {
     NowPlayingInfo.onMain { self.refreshAllOnMain(snapshot, trigger: trigger, requested: requested) }
   }
 
+  /// Preserve the resolved artwork and the playback clock for display-only edits.
+  func refreshMetadata(_ snapshot: Snapshot, artworkChanged: Bool) {
+    NowPlayingInfo.onMain {
+      guard !self.castActive, snapshot.track != nil else { return }
+      guard var info = MPNowPlayingInfoCenter.default().nowPlayingInfo,
+            info[MPNowPlayingInfoPropertyExternalContentIdentifier] as? String == snapshot.queueItemId
+      else { return }
+      self.applyMetadata(snapshot.track, into: &info)
+      if artworkChanged { info[MPMediaItemPropertyArtwork] = self.placeholderArtwork() }
+      MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+    }
+  }
+
   @MainActor
   private func refreshAllOnMain(_ snapshot: Snapshot, trigger: Trigger, requested: ContinuousClock.Instant) {
     let waited = ContinuousClock.now - requested

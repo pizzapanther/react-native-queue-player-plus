@@ -16,6 +16,7 @@ public protocol HybridTrackPlayerSpec_protocol: HybridObject {
   func configure(config: PlayerConfig) throws -> Promise<Void>
   func destroy() throws -> Promise<Void>
   func setQueue(tracks: [TrackItem], startAtIndex: Double?) throws -> Promise<Void>
+  func updateMetadata(index: Double, metadata: TrackMetadataUpdate) throws -> Promise<Void>
   func addToQueue(tracks: [TrackItem], insertBefore: Double?) throws -> Promise<Void>
   func removeFromQueue(indices: [Double]) throws -> Promise<Void>
   func moveInQueue(fromIndex: Double, toIndex: Double) throws -> Promise<Void>

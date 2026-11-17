@@ -55,6 +55,8 @@ namespace margelo::nitro::queueplayer { struct AudioCategoryOptions; }
 namespace margelo::nitro::queueplayer { enum class SkipToPreviousBehavior; }
 // Forward declaration of `EvictionPolicy` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class EvictionPolicy; }
+// Forward declaration of `TrackMetadataUpdate` to properly resolve imports.
+namespace margelo::nitro::queueplayer { struct TrackMetadataUpdate; }
 // Forward declaration of `RepeatMode` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class RepeatMode; }
 // Forward declaration of `StateChangeReason` to properly resolve imports.
@@ -166,6 +168,8 @@ namespace margelo::nitro::queueplayer { struct LookaheadCacheConfig; }
 #include "JSkipToPreviousBehavior.hpp"
 #include "EvictionPolicy.hpp"
 #include "JEvictionPolicy.hpp"
+#include "TrackMetadataUpdate.hpp"
+#include "JTrackMetadataUpdate.hpp"
 #include "RepeatMode.hpp"
 #include "JRepeatMode.hpp"
 #include "StateChangeReason.hpp"
@@ -305,6 +309,21 @@ namespace margelo::nitro::queueplayer {
       }
       return __array;
     }(tracks), startAtIndex.has_value() ? jni::JDouble::valueOf(startAtIndex.value()) : nullptr);
+    return [&]() {
+      auto __promise = Promise<void>::create();
+      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& /* unit */) {
+        __promise->resolve();
+      });
+      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
+        jni::JniException __jniError(__throwable);
+        __promise->reject(std::make_exception_ptr(__jniError));
+      });
+      return __promise;
+    }();
+  }
+  std::shared_ptr<Promise<void>> JHybridTrackPlayerSpec::updateMetadata(double index, const TrackMetadataUpdate& metadata) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(double /* index */, jni::alias_ref<JTrackMetadataUpdate> /* metadata */)>("updateMetadata");
+    auto __result = method(_javaPart, index, JTrackMetadataUpdate::fromCpp(metadata));
     return [&]() {
       auto __promise = Promise<void>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& /* unit */) {

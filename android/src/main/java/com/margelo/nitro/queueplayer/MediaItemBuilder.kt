@@ -87,7 +87,7 @@ object MediaItemBuilder {
    * so Media3's BitmapLoader resolves it once per process rather than
    * cloning a byte[] into every MediaMetadata.
    */
-  private fun buildMetadata(
+  internal fun buildMetadata(
     context: Context,
     track: TrackItem,
     customPlaceholderUri: String?
@@ -129,6 +129,18 @@ object MediaItemBuilder {
     }
 
     return builder.build()
+  }
+
+  /** Change display fields only; retain decoded duration, extras and media configuration. */
+  internal fun withDisplayMetadata(item: MediaItem, metadata: MediaMetadata): MediaItem {
+    val builder = item.mediaMetadata.buildUpon()
+      .setTitle(metadata.title)
+      .setArtist(metadata.artist)
+      .setAlbumTitle(metadata.albumTitle)
+    if (item.mediaMetadata.artworkUri != metadata.artworkUri) {
+      builder.setArtworkUri(metadata.artworkUri).setArtworkData(null, null)
+    }
+    return item.buildUpon().setMediaMetadata(builder.build()).build()
   }
 
   /**

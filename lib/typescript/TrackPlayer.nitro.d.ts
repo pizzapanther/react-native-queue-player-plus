@@ -1,5 +1,5 @@
 import type { HybridObject } from 'react-native-nitro-modules';
-import type { TrackItem, TimedMetadata, PlayerConfig, PlayerState, BufferState, PlaybackMode, RepeatMode, RemoteControlOptions, StateChangeReason, TrackChangeReason, QueueChangeReason, QueueChangeDelta, TrackSource, PlaybackError, PlayerProgress, SkipCapability, SleepTimerState, LookaheadCacheConfig, CacheStatus, MediaSearchRequest, BrowseItem, BrowseSnapshot, ShuffleResult, NowPlayingFormat, ReplayGainMode, PitchCorrectionMode, ServiceReadyReason, VoiceVocabulary } from './types';
+import type { TrackItem, TimedMetadata, TrackMetadataUpdate, PlayerConfig, PlayerState, BufferState, PlaybackMode, RepeatMode, RemoteControlOptions, StateChangeReason, TrackChangeReason, QueueChangeReason, QueueChangeDelta, TrackSource, PlaybackError, PlayerProgress, SkipCapability, SleepTimerState, LookaheadCacheConfig, CacheStatus, MediaSearchRequest, BrowseItem, BrowseSnapshot, ShuffleResult, NowPlayingFormat, ReplayGainMode, PitchCorrectionMode, ServiceReadyReason, VoiceVocabulary } from './types';
 export interface TrackPlayer extends HybridObject<{
     ios: 'swift';
     android: 'kotlin';
@@ -51,6 +51,17 @@ export interface TrackPlayer extends HybridObject<{
      * in their original order.
      */
     setQueue(tracks: TrackItem[], startAtIndex?: number): Promise<void>;
+    /**
+     * Patch a queue entry's display metadata without restarting playback.
+     * Omitted fields are preserved; empty strings clear text/artwork. `albumTitle`
+     * maps to TrackItem.album. URL, identity, position and playback state stay intact.
+     * Invalid indices (including fractions/non-finite numbers), empty patches and
+     * unchanged values are no-ops. Emits onQueueChange with `update-metadata` when
+     * changed; does not emit onTrackChange or onTimedMetadata.
+     * Updates the local queue and local system metadata; remote cast receivers
+     * retain their own metadata until their queue is reloaded.
+     */
+    updateMetadata(index: number, metadata: TrackMetadataUpdate): Promise<void>;
     /**
      * Append (or insert at `insertBefore`) the given tracks to the queue.
      *
@@ -341,7 +352,7 @@ export interface TrackPlayer extends HybridObject<{
     onTimedMetadata(callback: (metadata: TimedMetadata) => void): () => void;
     /**
      * Fires when the queue **contents or order** change — `setQueue`,
-     * `addToQueue`, `removeFromQueue`, `moveInQueue`, `clearQueue`,
+     * `addToQueue`, `removeFromQueue`, `moveInQueue`, `updateMetadata`, `clearQueue`,
      * `shuffleQueue`. Unlike `onTrackChange` (which fires only when the
      * active *track* changes), this fires on queue-preserving mutations —
      * e.g. inserting a "play next" item or removing an upcoming track — so
