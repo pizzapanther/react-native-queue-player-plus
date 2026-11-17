@@ -259,6 +259,8 @@ class TrackPlayer: HybridTrackPlayerSpec {
   // simultaneously without clobbering each other.
   internal let stateChangeListeners = ListenerRegistry<(PlayerState, StateChangeReason) -> Void>()
   internal let trackChangeListeners = ListenerRegistry<(TrackItem?, Double, TrackChangeReason, Double?) -> Void>()
+  internal let timedMetadataListeners = ListenerRegistry<(TimedMetadata) -> Void>()
+  internal var timedMetadataObservation: TimedMetadataObservation?
   internal let queueChangeListeners = ListenerRegistry<(QueueChangeDelta, Double, QueueChangeReason) -> Void>()
   internal let progressListeners = ListenerRegistry<(PlayerProgress) -> Void>()
   internal let milestoneListeners = ListenerRegistry<(Double, Double) -> Void>()

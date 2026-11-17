@@ -57,6 +57,7 @@ namespace margelo::nitro::queueplayer {
       prototype.registerHybridMethod("getSleepTimer", &HybridTrackPlayerSpec::getSleepTimer);
       prototype.registerHybridMethod("onStateChange", &HybridTrackPlayerSpec::onStateChange);
       prototype.registerHybridMethod("onTrackChange", &HybridTrackPlayerSpec::onTrackChange);
+      prototype.registerHybridMethod("onTimedMetadata", &HybridTrackPlayerSpec::onTimedMetadata);
       prototype.registerHybridMethod("onQueueChange", &HybridTrackPlayerSpec::onQueueChange);
       prototype.registerHybridMethod("onProgress", &HybridTrackPlayerSpec::onProgress);
       prototype.registerHybridMethod("onPlaybackMilestone", &HybridTrackPlayerSpec::onPlaybackMilestone);

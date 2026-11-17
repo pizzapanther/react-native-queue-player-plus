@@ -121,6 +121,7 @@ extension TrackPlayer {
   /// extractor for the current AVPlayerItem. When there is no current
   /// item, clears + emits null and returns without launching a Task.
   internal func refreshNowPlayingFormatForActiveItem() {
+    refreshTimedMetadataObservation()
     self.nowPlayingFormatRequestGen &+= 1
     let gen = self.nowPlayingFormatRequestGen
 

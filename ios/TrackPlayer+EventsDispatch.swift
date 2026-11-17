@@ -216,6 +216,8 @@ extension TrackPlayer {
   /// a different first track). On a real fire, also resets the
   /// error-dedup state so a new item's identical-coded error fires.
   internal func dispatchTrackChange(reason: TrackChangeReason) {
+    // Rebind even when a retry / engine swap preserves the queue entry's id.
+    refreshTimedMetadataObservation()
     let idx = self.currentTrackIndex
     let track: TrackItem? = (idx >= 0 && idx < self.tracks.count)
       ? self.tracks[idx] : nil

@@ -277,6 +277,9 @@ interface PlaybackEngineDelegate {
    */
   fun onActiveItemFormatChanged(engine: PlaybackEngine)
 
+  /** In-stream samples from the active player's playback-timed MetadataRenderer. */
+  fun onTimedMetadata(engine: PlaybackEngine, metadata: androidx.media3.common.Metadata) {}
+
   /**
    * Fires on Media3 `Player.Listener.onPlayerError`. The delegate maps
    * [exception] via the lib's `PlaybackErrorMapping`. [failedIndex] is the

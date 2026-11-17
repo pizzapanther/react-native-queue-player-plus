@@ -104,6 +104,33 @@ function NowPlaying() {
 
 The player is a singleton — `getTrackPlayer()` always returns the same instance. There is no class to instantiate. The same pattern applies to `getEqualizer()`, `getVisualizer()`, and `getCastManager()`.
 
+### Timed stream metadata
+
+Subscribe to title, artist, album title, and artwork updates carried in the
+stream (for example HLS ID3 or ICY):
+
+```ts
+const unsubscribe = getTrackPlayer().onTimedMetadata((metadata) => {
+  const { title, artist, albumTitle, artworkUrl } = metadata;
+  // Update your stream UI. Each field is optional.
+});
+
+// When the subscriber is no longer needed:
+unsubscribe();
+```
+
+Events follow the native playback clock, so downloading or buffering future
+metadata does not publish it early. JavaScript callbacks can still be delayed
+by a busy JS thread. During crossfade, events follow the incoming track from
+fade-start. Remote cast receivers do not supply these local playback events.
+
+Each event contains the fields supplied by that sample, not a merged snapshot.
+Static queue metadata is not emitted, and events do not modify the queue or
+system Now Playing metadata. Standard ID3 title/artist/album fields and custom
+`artworkUrl` / `coverArtUrl` text or URL fields are supported. JPEG/PNG embedded
+artwork is exposed as a data URI. ICY `Artist - Title` is split at the first
+separator; a bare title remains a title. ICY `StreamUrl` is not treated as art.
+
 ## Manual configuration
 
 Most native setup is automatic (Nitro autolinking + the Android manifest merge + the Expo plugin). A few things you must do by hand — see the [Setup & manual configuration guide](https://ghenry22.github.io/react-native-queue-player/docs/guides/manual-setup) for full detail:

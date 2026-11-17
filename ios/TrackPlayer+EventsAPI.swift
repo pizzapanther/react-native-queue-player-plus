@@ -30,6 +30,11 @@ extension TrackPlayer {
     return { [weak self] in self?.queueChangeListeners.remove(id: id) }
   }
 
+  func onTimedMetadata(callback: @escaping (TimedMetadata) -> Void) throws -> () -> Void {
+    let id = timedMetadataListeners.add(callback)
+    return { [weak self] in self?.timedMetadataListeners.remove(id: id) }
+  }
+
   /// Emit a queue change as a description of what happened rather than a copy
   /// of the queue. Callers pass only the fields their mutation defines; the
   /// rest stay empty, and `revision` lets a subscriber notice a dropped event.

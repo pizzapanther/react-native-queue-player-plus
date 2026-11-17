@@ -169,6 +169,14 @@ namespace margelo::nitro::queueplayer::bridge::swift {
     };
   }
   
+  // pragma MARK: std::function<void(const TimedMetadata& /* metadata */)>
+  Func_void_TimedMetadata create_Func_void_TimedMetadata(void* NON_NULL swiftClosureWrapper) noexcept {
+    auto swiftClosure = QueuePlayer::Func_void_TimedMetadata::fromUnsafe(swiftClosureWrapper);
+    return [swiftClosure = std::move(swiftClosure)](const TimedMetadata& metadata) mutable -> void {
+      swiftClosure.call(metadata);
+    };
+  }
+  
   // pragma MARK: std::function<void(const QueueChangeDelta& /* delta */, double /* currentIndex */, QueueChangeReason /* reason */)>
   Func_void_QueueChangeDelta_double_QueueChangeReason create_Func_void_QueueChangeDelta_double_QueueChangeReason(void* NON_NULL swiftClosureWrapper) noexcept {
     auto swiftClosure = QueuePlayer::Func_void_QueueChangeDelta_double_QueueChangeReason::fromUnsafe(swiftClosureWrapper);

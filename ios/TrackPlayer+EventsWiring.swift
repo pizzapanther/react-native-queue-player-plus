@@ -117,6 +117,8 @@ extension TrackPlayer {
   }
 
   internal func tearDownEventObservers() {
+    timedMetadataObservation?.invalidate()
+    timedMetadataObservation = nil
     if let pair = progressTimeObserver {
       pair.player.removeTimeObserver(pair.token)
       progressTimeObserver = nil

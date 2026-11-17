@@ -134,6 +134,8 @@ namespace margelo::nitro::queueplayer { enum class SkipToPreviousBehavior; }
 namespace margelo::nitro::queueplayer { struct SleepTimerState; }
 // Forward declaration of `StateChangeReason` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class StateChangeReason; }
+// Forward declaration of `TimedMetadata` to properly resolve imports.
+namespace margelo::nitro::queueplayer { struct TimedMetadata; }
 // Forward declaration of `TrackChangeReason` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class TrackChangeReason; }
 // Forward declaration of `TrackItem` to properly resolve imports.
@@ -213,6 +215,7 @@ namespace margelo::nitro::queueplayer { struct VoiceVocabulary; }
 #include "SkipToPreviousBehavior.hpp"
 #include "SleepTimerState.hpp"
 #include "StateChangeReason.hpp"
+#include "TimedMetadata.hpp"
 #include "TrackChangeReason.hpp"
 #include "TrackItem.hpp"
 #include "TrackSource.hpp"

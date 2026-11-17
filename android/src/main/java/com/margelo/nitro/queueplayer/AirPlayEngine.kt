@@ -65,6 +65,10 @@ internal class AirPlayEngine(
   private var released: Boolean = false
 
   private val playerListener = object : Player.Listener {
+    override fun onMetadata(metadata: androidx.media3.common.Metadata) {
+      delegate?.onTimedMetadata(this@AirPlayEngine, metadata)
+    }
+
     override fun onPlaybackStateChanged(playbackState: Int) {
       // End signal before the generic state callback, as in GaplessEngine.
       if (playbackState == Player.STATE_ENDED) {

@@ -877,6 +877,26 @@ open class HybridTrackPlayerSpec_cxx {
   }
   
   @inline(__always)
+  public final func onTimedMetadata(callback: bridge.Func_void_TimedMetadata) -> bridge.Result_std__function_void____ {
+    do {
+      let __result = try self.__implementation.onTimedMetadata(callback: { () -> (TimedMetadata) -> Void in
+        let __wrappedFunction = bridge.wrap_Func_void_TimedMetadata(callback)
+        return { (__metadata: TimedMetadata) -> Void in
+          __wrappedFunction.call(__metadata)
+        }
+      }())
+      let __resultCpp = { () -> bridge.Func_void in
+        let __closureWrapper = Func_void(__result)
+        return bridge.create_Func_void(__closureWrapper.toUnsafe())
+      }()
+      return bridge.create_Result_std__function_void____(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__function_void____(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
   public final func onQueueChange(callback: bridge.Func_void_QueueChangeDelta_double_QueueChangeReason) -> bridge.Result_std__function_void____ {
     do {
       let __result = try self.__implementation.onQueueChange(callback: { () -> (QueueChangeDelta, Double, QueueChangeReason) -> Void in

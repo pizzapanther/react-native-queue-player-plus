@@ -66,6 +66,31 @@ class TrackPlayerEventsTest {
   // --- onProgress registration lifecycle
 
   @Test
+  fun `timed metadata supports multiple subscribers and drops retired engines`() {
+    player.setQueueInternal(listOf(track("stream")))
+    val first = mutableListOf<TimedMetadata>()
+    val second = mutableListOf<TimedMetadata>()
+    val offFirst = player.onTimedMetadata { first.add(it) }
+    val offSecond = player.onTimedMetadata { second.add(it) }
+    val sample = androidx.media3.common.Metadata(
+      androidx.media3.extractor.metadata.icy.IcyInfo(byteArrayOf(), "Artist - Song", null)
+    )
+    val engine = serviceHandle.engine
+    player.onTimedMetadata(engine, sample)
+    assertEquals(1, first.size)
+    assertEquals(first, second)
+    offFirst()
+    offFirst()
+    player.onTimedMetadata(engine, sample)
+    assertEquals(1, first.size)
+    assertEquals(2, second.size)
+    player.destroyInternal()
+    player.onTimedMetadata(engine, sample)
+    assertEquals(2, second.size)
+    offSecond()
+  }
+
+  @Test
   fun `onProgress subscription returns an unsubscribe closure that clears the callback`() {
     val received = mutableListOf<PlayerProgress>()
     val unsubscribe = player.onProgress { p -> received.add(p) }

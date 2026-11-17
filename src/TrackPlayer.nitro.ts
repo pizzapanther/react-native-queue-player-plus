@@ -1,6 +1,7 @@
 import type { HybridObject } from 'react-native-nitro-modules';
 import type {
   TrackItem,
+  TimedMetadata,
   PlayerConfig,
   PlayerState,
   BufferState,
@@ -375,6 +376,22 @@ export interface TrackPlayer
       transitionGapMs: number | undefined
     ) => void
   ): () => void;
+  /**
+   * In-stream metadata delivered when playback reaches the sample's timestamp,
+   * including HLS/ID3 and ICY metadata supported by the native player. Buffering
+   * ahead does not publish future samples. During a crossfade, only the incoming
+   * (active) track publishes updates once the fade begins.
+   *
+   * Each event contains only fields present in that sample; it is not a merged
+   * snapshot and does not change the queue's TrackItem or system Now Playing.
+   * ICY `Artist - Title` is split at the first separator. A bare ICY title is
+   * preserved as title. A station's StreamUrl is not an artwork URL.
+   * No initial event is synthesized from static track/container metadata.
+   * Timing follows the native playback clock (JS delivery can be delayed by a
+   * busy JS thread). Remote cast receivers do not supply these local events.
+   * Returns an unsubscribe function.
+   */
+  onTimedMetadata(callback: (metadata: TimedMetadata) => void): () => void;
   /**
    * Fires when the queue **contents or order** change — `setQueue`,
    * `addToQueue`, `removeFromQueue`, `moveInQueue`, `clearQueue`,

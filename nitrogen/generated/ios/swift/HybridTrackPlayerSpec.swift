@@ -56,6 +56,7 @@ public protocol HybridTrackPlayerSpec_protocol: HybridObject {
   func getSleepTimer() throws -> SleepTimerState
   func onStateChange(callback: @escaping (_ state: PlayerState, _ reason: StateChangeReason) -> Void) throws -> () -> Void
   func onTrackChange(callback: @escaping (_ track: TrackItem?, _ index: Double, _ reason: TrackChangeReason, _ transitionGapMs: Double?) -> Void) throws -> () -> Void
+  func onTimedMetadata(callback: @escaping (_ metadata: TimedMetadata) -> Void) throws -> () -> Void
   func onQueueChange(callback: @escaping (_ delta: QueueChangeDelta, _ currentIndex: Double, _ reason: QueueChangeReason) -> Void) throws -> () -> Void
   func onProgress(callback: @escaping (_ progress: PlayerProgress) -> Void) throws -> () -> Void
   func onPlaybackMilestone(callback: @escaping (_ milestone: Double, _ trackIndex: Double) -> Void) throws -> () -> Void

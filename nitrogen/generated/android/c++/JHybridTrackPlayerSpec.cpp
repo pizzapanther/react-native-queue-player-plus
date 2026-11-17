@@ -61,6 +61,8 @@ namespace margelo::nitro::queueplayer { enum class RepeatMode; }
 namespace margelo::nitro::queueplayer { enum class StateChangeReason; }
 // Forward declaration of `TrackChangeReason` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class TrackChangeReason; }
+// Forward declaration of `TimedMetadata` to properly resolve imports.
+namespace margelo::nitro::queueplayer { struct TimedMetadata; }
 // Forward declaration of `QueueChangeDelta` to properly resolve imports.
 namespace margelo::nitro::queueplayer { struct QueueChangeDelta; }
 // Forward declaration of `QueueChangeReason` to properly resolve imports.
@@ -172,6 +174,9 @@ namespace margelo::nitro::queueplayer { struct LookaheadCacheConfig; }
 #include "TrackChangeReason.hpp"
 #include "JFunc_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_.hpp"
 #include "JTrackChangeReason.hpp"
+#include "TimedMetadata.hpp"
+#include "JFunc_void_TimedMetadata.hpp"
+#include "JTimedMetadata.hpp"
 #include "QueueChangeDelta.hpp"
 #include "QueueChangeReason.hpp"
 #include "JFunc_void_QueueChangeDelta_double_QueueChangeReason.hpp"
@@ -773,6 +778,19 @@ namespace margelo::nitro::queueplayer {
   std::function<void()> JHybridTrackPlayerSpec::onTrackChange(const std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */)>& callback) {
     static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JFunc_void::javaobject>(jni::alias_ref<JFunc_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_::javaobject> /* callback */)>("onTrackChange_cxx");
     auto __result = method(_javaPart, JFunc_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__cxx::fromCpp(callback));
+    return [&]() -> std::function<void()> {
+      if (__result->isInstanceOf(JFunc_void_cxx::javaClassStatic())) [[likely]] {
+        auto downcast = jni::static_ref_cast<JFunc_void_cxx::javaobject>(__result);
+        return downcast->cthis()->getFunction();
+      } else {
+        auto __resultRef = jni::make_global(__result);
+        return JNICallable<JFunc_void, void()>(std::move(__resultRef));
+      }
+    }();
+  }
+  std::function<void()> JHybridTrackPlayerSpec::onTimedMetadata(const std::function<void(const TimedMetadata& /* metadata */)>& callback) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JFunc_void::javaobject>(jni::alias_ref<JFunc_void_TimedMetadata::javaobject> /* callback */)>("onTimedMetadata_cxx");
+    auto __result = method(_javaPart, JFunc_void_TimedMetadata_cxx::fromCpp(callback));
     return [&]() -> std::function<void()> {
       if (__result->isInstanceOf(JFunc_void_cxx::javaClassStatic())) [[likely]] {
         auto downcast = jni::static_ref_cast<JFunc_void_cxx::javaobject>(__result);

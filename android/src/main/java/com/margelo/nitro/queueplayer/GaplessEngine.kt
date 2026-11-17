@@ -184,6 +184,7 @@ internal class GaplessEngine(
     }
 
     override fun onMetadata(metadata: Metadata) {
+      delegate?.onTimedMetadata(this@GaplessEngine, metadata)
       // Defensive path for in-stream metadata samples (rare for the
       // local-file case; primarily HLS in-stream RG tags). The
       // container-level path runs via `onTracksChanged` above.

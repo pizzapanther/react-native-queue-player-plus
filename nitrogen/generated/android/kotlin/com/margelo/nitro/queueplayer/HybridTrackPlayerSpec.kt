@@ -213,6 +213,15 @@ abstract class HybridTrackPlayerSpec: HybridObject() {
     return Func_void_java(__result)
   }
   
+  abstract fun onTimedMetadata(callback: (metadata: TimedMetadata) -> Unit): () -> Unit
+  
+  @DoNotStrip
+  @Keep
+  private fun onTimedMetadata_cxx(callback: Func_void_TimedMetadata): Func_void {
+    val __result = onTimedMetadata(callback)
+    return Func_void_java(__result)
+  }
+  
   abstract fun onQueueChange(callback: (delta: QueueChangeDelta, currentIndex: Double, reason: QueueChangeReason) -> Unit): () -> Unit
   
   @DoNotStrip

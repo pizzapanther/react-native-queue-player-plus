@@ -97,6 +97,7 @@ namespace margelo::nitro::queueplayer {
     SleepTimerState getSleepTimer() override;
     std::function<void()> onStateChange(const std::function<void(PlayerState /* state */, StateChangeReason /* reason */)>& callback) override;
     std::function<void()> onTrackChange(const std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */)>& callback) override;
+    std::function<void()> onTimedMetadata(const std::function<void(const TimedMetadata& /* metadata */)>& callback) override;
     std::function<void()> onQueueChange(const std::function<void(const QueueChangeDelta& /* delta */, double /* currentIndex */, QueueChangeReason /* reason */)>& callback) override;
     std::function<void()> onProgress(const std::function<void(const PlayerProgress& /* progress */)>& callback) override;
     std::function<void()> onPlaybackMilestone(const std::function<void(double /* milestone */, double /* trackIndex */)>& callback) override;

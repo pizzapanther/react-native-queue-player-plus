@@ -52,6 +52,8 @@ namespace margelo::nitro::queueplayer { struct SleepTimerState; }
 namespace margelo::nitro::queueplayer { enum class StateChangeReason; }
 // Forward declaration of `TrackChangeReason` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class TrackChangeReason; }
+// Forward declaration of `TimedMetadata` to properly resolve imports.
+namespace margelo::nitro::queueplayer { struct TimedMetadata; }
 // Forward declaration of `QueueChangeDelta` to properly resolve imports.
 namespace margelo::nitro::queueplayer { struct QueueChangeDelta; }
 // Forward declaration of `QueueChangeReason` to properly resolve imports.
@@ -131,6 +133,7 @@ namespace margelo::nitro::queueplayer { struct NowPlayingFormatAndroidExtras; }
 #include <functional>
 #include "StateChangeReason.hpp"
 #include "TrackChangeReason.hpp"
+#include "TimedMetadata.hpp"
 #include "QueueChangeDelta.hpp"
 #include "QueueChangeReason.hpp"
 #include "PlayerProgress.hpp"
@@ -548,6 +551,14 @@ namespace margelo::nitro::queueplayer {
     }
     inline std::function<void()> onTrackChange(const std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */)>& callback) override {
       auto __result = _swiftPart.onTrackChange(callback);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::function<void()> onTimedMetadata(const std::function<void(const TimedMetadata& /* metadata */)>& callback) override {
+      auto __result = _swiftPart.onTimedMetadata(callback);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

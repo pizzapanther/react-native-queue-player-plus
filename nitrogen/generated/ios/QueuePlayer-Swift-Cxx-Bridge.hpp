@@ -120,6 +120,8 @@ namespace margelo::nitro::queueplayer { enum class SkipToPreviousBehavior; }
 namespace margelo::nitro::queueplayer { struct SleepTimerState; }
 // Forward declaration of `StateChangeReason` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class StateChangeReason; }
+// Forward declaration of `TimedMetadata` to properly resolve imports.
+namespace margelo::nitro::queueplayer { struct TimedMetadata; }
 // Forward declaration of `TrackChangeReason` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class TrackChangeReason; }
 // Forward declaration of `TrackItem` to properly resolve imports.
@@ -197,6 +199,7 @@ namespace QueuePlayer { class HybridVisualizerSpec_cxx; }
 #include "SkipToPreviousBehavior.hpp"
 #include "SleepTimerState.hpp"
 #include "StateChangeReason.hpp"
+#include "TimedMetadata.hpp"
 #include "TrackChangeReason.hpp"
 #include "TrackItem.hpp"
 #include "TrackSource.hpp"
@@ -972,6 +975,28 @@ namespace margelo::nitro::queueplayer::bridge::swift {
   Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_ create_Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_(void* NON_NULL swiftClosureWrapper) noexcept;
   inline Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__Wrapper wrap_Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_(Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_ value) noexcept {
     return Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__Wrapper(std::move(value));
+  }
+  
+  // pragma MARK: std::function<void(const TimedMetadata& /* metadata */)>
+  /**
+   * Specialized version of `std::function<void(const TimedMetadata&)>`.
+   */
+  using Func_void_TimedMetadata = std::function<void(const TimedMetadata& /* metadata */)>;
+  /**
+   * Wrapper class for a `std::function<void(const TimedMetadata& / * metadata * /)>`, this can be used from Swift.
+   */
+  class Func_void_TimedMetadata_Wrapper final {
+  public:
+    explicit Func_void_TimedMetadata_Wrapper(std::function<void(const TimedMetadata& /* metadata */)>&& func): _function(std::make_unique<std::function<void(const TimedMetadata& /* metadata */)>>(std::move(func))) {}
+    inline void call(TimedMetadata metadata) const noexcept {
+      _function->operator()(metadata);
+    }
+  private:
+    std::unique_ptr<std::function<void(const TimedMetadata& /* metadata */)>> _function;
+  } SWIFT_NONCOPYABLE;
+  Func_void_TimedMetadata create_Func_void_TimedMetadata(void* NON_NULL swiftClosureWrapper) noexcept;
+  inline Func_void_TimedMetadata_Wrapper wrap_Func_void_TimedMetadata(Func_void_TimedMetadata value) noexcept {
+    return Func_void_TimedMetadata_Wrapper(std::move(value));
   }
   
   // pragma MARK: std::function<void(const QueueChangeDelta& /* delta */, double /* currentIndex */, QueueChangeReason /* reason */)>

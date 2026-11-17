@@ -550,6 +550,11 @@ internal class CrossfadeEngine(
       // RG tags, ICY shoutcast). The container-level path runs via
       // `onTracksChanged` above.
       val player = if (isA) playerA else playerB
+      // The active player switches to the incoming leg at fade-start. Neither
+      // standby preroll nor the outgoing leg may publish its timed metadata.
+      if (player === activePlayer) {
+        delegate?.onTimedMetadata(this@CrossfadeEngine, metadata)
+      }
       val mimeType = currentSampleMimeType(player)
       val parsed = ReplayGainExtractor.extract(metadata, mimeType)
       handleReplayGainParse(isA = isA, parsed = parsed)

@@ -16,6 +16,14 @@
  *     (e.g. `EvictionPolicy = 'lru' | 'fifo'`) to disambiguate from
  *     plain `string` during Nitrogen codegen. See NOTES.md §1.4.
  */
+/** A playback-timed metadata sample. Missing fields were not supplied by the stream. */
+export interface TimedMetadata {
+    title?: string;
+    artist?: string;
+    albumTitle?: string;
+    /** An artwork URL, or a data URI when the stream embeds an image. */
+    artworkUrl?: string;
+}
 export interface TrackItem {
     /**
      * Optional consumer-supplied identifier. Echoed back to the consumer

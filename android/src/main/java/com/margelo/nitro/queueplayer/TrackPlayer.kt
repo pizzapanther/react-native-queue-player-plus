@@ -700,6 +700,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   // simultaneously without clobbering each other.
   private val stateChangeListeners = ListenerRegistry<(PlayerState, StateChangeReason) -> Unit>()
   private val trackChangeListeners = ListenerRegistry<(TrackItem?, Double, TrackChangeReason, Double?) -> Unit>()
+  private val timedMetadataListeners = ListenerRegistry<(TimedMetadata) -> Unit>()
   private val queueChangeListeners = ListenerRegistry<(QueueChangeDelta, Double, QueueChangeReason) -> Unit>()
   private val progressListeners = ListenerRegistry<(PlayerProgress) -> Unit>()
   // Buffer state — discrete empty/buffering/stalled/full for the active track, derived
@@ -3306,6 +3307,11 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     return { queueChangeListeners.remove(id) }
   }
 
+  override fun onTimedMetadata(callback: (metadata: TimedMetadata) -> Unit): () -> Unit {
+    val id = timedMetadataListeners.add(callback)
+    return { timedMetadataListeners.remove(id) }
+  }
+
   /**
    * Emit a queue change as a description of what happened rather than a copy of
    * the queue. Callers pass only the fields their mutation defines; the rest
@@ -3962,6 +3968,13 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   }
 
   // --- PlaybackEngineDelegate — engine signal routing ---
+
+  override fun onTimedMetadata(engine: PlaybackEngine, metadata: androidx.media3.common.Metadata) {
+    if (serviceBinder?.engine !== engine || currentTrackIndex !in tracks.indices) return
+    if (com.margelo.nitro.queueplayer.cast.PlaybackStateRouter.activeRemote() != null) return
+    val update = TimedMetadataParser.parse(metadata) ?: return
+    timedMetadataListeners.forEach { it(update) }
+  }
 
   override fun onStateMaybeChanged(engine: PlaybackEngine, playWhenReadyReason: Int?) {
     if (playWhenReadyReason != null) {

@@ -8,6 +8,7 @@ export type { CastManager } from './CastManager.nitro';
 export type {
   // Player
   TrackItem,
+  TimedMetadata,
   PlayerConfig,
   AudioContentType,
   AudioCategoryOptions,

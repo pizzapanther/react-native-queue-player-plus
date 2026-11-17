@@ -29,6 +29,7 @@
 #include "JHybridTrackPlayerSpec.hpp"
 #include "JFunc_void_PlayerState_StateChangeReason.hpp"
 #include "JFunc_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_.hpp"
+#include "JFunc_void_TimedMetadata.hpp"
 #include "JFunc_void_QueueChangeDelta_double_QueueChangeReason.hpp"
 #include "JFunc_void_PlayerProgress.hpp"
 #include "JFunc_void_double_double.hpp"
@@ -107,6 +108,7 @@ void registerAllNatives() {
   margelo::nitro::queueplayer::JHybridTrackPlayerSpec::CxxPart::registerNatives();
   margelo::nitro::queueplayer::JFunc_void_PlayerState_StateChangeReason_cxx::registerNatives();
   margelo::nitro::queueplayer::JFunc_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__cxx::registerNatives();
+  margelo::nitro::queueplayer::JFunc_void_TimedMetadata_cxx::registerNatives();
   margelo::nitro::queueplayer::JFunc_void_QueueChangeDelta_double_QueueChangeReason_cxx::registerNatives();
   margelo::nitro::queueplayer::JFunc_void_PlayerProgress_cxx::registerNatives();
   margelo::nitro::queueplayer::JFunc_void_double_double_cxx::registerNatives();
