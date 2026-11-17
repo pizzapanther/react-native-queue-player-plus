@@ -260,14 +260,15 @@ internal class PlaybackServiceCallback(
         // callback for its `setQueue(tracks, startAt)` side effect
         // and discards the resolved track list, so the lib never
         // re-applies the tracks (which would reset
-        // `currentTrackIndex` to 0). The returned
-        // `MediaItemsWithStartPosition` carries an empty list with
-        // `INDEX_UNSET`; Media3 treats that as "no queue change",
-        // leaving the JS-side `setQueue` as the only writer.
+        // `currentTrackIndex` to 0).
+        // An empty result would clear the player and emit a transition
+        // against the previous canonical index. Return an internal marker
+        // that SessionCommandForwardingPlayer consumes as a successful no-op,
+        // leaving the JS handler as the only queue writer.
         environment.onPlayFromIdRequestNoSync(mediaId)
         return Futures.immediateFuture(
           MediaSession.MediaItemsWithStartPosition(
-            emptyList(),
+            listOf(SessionCommandForwardingPlayer.JS_MANAGED_QUEUE_ITEM),
             androidx.media3.common.C.INDEX_UNSET,
             androidx.media3.common.C.TIME_UNSET
           )

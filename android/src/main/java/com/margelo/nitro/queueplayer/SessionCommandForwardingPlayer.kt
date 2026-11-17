@@ -2,6 +2,7 @@ package com.margelo.nitro.queueplayer
 
 import androidx.media3.common.C
 import androidx.media3.common.ForwardingSimpleBasePlayer
+import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -40,6 +41,27 @@ internal class SessionCommandForwardingPlayer(
   private val session: () -> MediaSession?,
   private val commandHandler: () -> PlaybackService.MediaSessionCommandHandler?,
 ) : ForwardingSimpleBasePlayer(initialPlayer) {
+
+  companion object {
+    // An in-process result for browse requests whose JS handler owns the
+    // queue. Media3 applies an empty result as a clear, so the callback must
+    // return an explicit marker that this wrapper consumes without forwarding.
+    // Identity comparison keeps real consumer media IDs out of this protocol.
+    internal val JS_MANAGED_QUEUE_ITEM = MediaItem.Builder()
+      .setMediaId("queue-player:js-managed-queue")
+      .build()
+  }
+
+  override fun handleSetMediaItems(
+    mediaItems: List<MediaItem>,
+    startIndex: Int,
+    startPositionMs: Long,
+  ): ListenableFuture<*> {
+    if (mediaItems.size == 1 && mediaItems[0] === JS_MANAGED_QUEUE_ITEM) {
+      return Futures.immediateVoidFuture()
+    }
+    return super.handleSetMediaItems(mediaItems, startIndex, startPositionMs)
+  }
 
   /**
    * Jump intervals (ms) for interval-skip mode, read on each controller

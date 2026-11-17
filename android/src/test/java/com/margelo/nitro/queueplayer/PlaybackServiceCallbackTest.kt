@@ -537,13 +537,48 @@ class PlaybackServiceCallbackTest {
     // Browse-leaf tap: JS handler owns the queue. Lib fires the
     // no-sync dispatch (so the lib does NOT re-apply the resolved
     // tracks and clobber `currentTrackIndex` back to 0) + returns
-    // empty + INDEX_UNSET so Media3 leaves the queue alone and the
-    // JS-side `setQueue(tracks, startAtIndex)` is the only writer.
+    // a marker consumed by the session wrapper so JS is the only writer.
     assertEquals(listOf("album:42:track:3"), fakeEnv.idRequestsNoSync)
     assertEquals(0, fakeEnv.idRequests.size)
-    assertTrue(result.mediaItems.isEmpty())
+    assertEquals(listOf(SessionCommandForwardingPlayer.JS_MANAGED_QUEUE_ITEM), result.mediaItems)
     assertEquals(C.INDEX_UNSET, result.startIndex)
     assertEquals(C.TIME_UNSET, result.startPositionMs)
+  }
+
+  @Test
+  fun `repeated browse selections do not clear the session or announce the previous item`() {
+    val routingCallback = PlaybackServiceCallback(RecordingEnvironment(service))
+    val nativePlayer = binder.engine.mediaSessionPlayer
+    val items = (0..2).map { index ->
+      MediaItem.Builder().setMediaId("track:$index")
+        .setUri("file:///queue-player-test/$index.m4a").build()
+    }
+    nativePlayer.setMediaItems(items)
+    val events = mutableListOf<Pair<String?, Int>>()
+    nativePlayer.addListener(object : Player.Listener {
+      override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        events.add(mediaItem?.mediaId to nativePlayer.currentMediaItemIndex)
+      }
+    })
+
+    for (index in 1..2) {
+      val result = routingCallback.onSetMediaItems(
+        session, controllerInfo,
+        mutableListOf(MediaItem.Builder().setMediaId("track:$index").build()),
+        0, 0L
+      ).get()
+      // Media3 applies INDEX_UNSET results using setMediaItems(items, true).
+      // This must preserve the queue until the JS callback selects its target.
+      session.player.setMediaItems(result.mediaItems, true)
+      assertEquals(3, nativePlayer.mediaItemCount)
+      assertEquals(index - 1, nativePlayer.currentMediaItemIndex)
+      nativePlayer.seekTo(index, 0L)
+    }
+    assertEquals(listOf("track:1" to 1, "track:2" to 2), events)
+
+    // Real empty playlists must continue to clear the player.
+    session.player.setMediaItems(emptyList(), true)
+    assertEquals(0, nativePlayer.mediaItemCount)
   }
 
   @Test
