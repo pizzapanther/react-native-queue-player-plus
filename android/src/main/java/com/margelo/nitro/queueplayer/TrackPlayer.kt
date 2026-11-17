@@ -4380,9 +4380,10 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
    * Translate Media3's `MEDIA_ITEM_TRANSITION_REASON_*` into our
    * [TrackChangeReason] domain enum, applying the state-sync policy:
    * `currentTrackIndex` is overridden from `p.currentMediaItemIndex`
-   * only on transitions Media3 originates (AUTO / REPEAT), never on
-   * caller-driven transitions (PLAYLIST_CHANGED + SEEK already wrote
-   * the index via the mutation/skip arithmetic). Consumes any
+   * only on transitions Media3 originates (AUTO / REPEAT) and SEEK
+   * transitions (which report Media3's settled target index). Never
+   * sync PLAYLIST_CHANGED, where caller-driven mutation arithmetic is
+   * authoritative. Consumes any
    * `pendingTrackChangeReason` stashed by the originating mutation
    * body. AUTO triggers a lookahead reschedule because the index
    * shifted; REPEAT_MODE_ONE leaves the index identical so the
@@ -4403,6 +4404,10 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     Player.MEDIA_ITEM_TRANSITION_REASON_SEEK -> {
       val stashed = pendingTrackChangeReason
       pendingTrackChangeReason = null
+      // Media3 has already moved to the target when it reports this
+      // transition. Read its settled index before the callback snapshots the
+      // track; this also covers skips to items added immediately beforehand.
+      syncCurrentTrackIndexFromPlayer(p)
       stashed ?: TrackChangeReason.SEEK
     }
     Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED -> {
