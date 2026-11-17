@@ -2468,13 +2468,20 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   internal fun skipToIndexInternal(target: Int) {
     val p = player ?: return
     if (target < 0 || target >= tracks.size) return
+    val engine = serviceBinder?.engine ?: return
+    // Adding to an empty queue primes Media3 at 0 while our selection stays
+    // at -1. Selecting that primed item is a logical track change, but a
+    // same-item seek does not produce onMediaItemTransition from Media3.
+    val nativeItemUnchanged = p.currentMediaItemIndex == target
+    val selectionChanged = currentTrackIndex != target
     currentTrackIndex = target
     // Seating a position is an attempt at it, so the report against it no
     // longer describes what is about to play. Cleared here rather than left to
     // the media-item transition, which does not fire for a skip that seats the
     // track already selected. Mirrors iOS `applyNewCurrentIndex`.
     reportedFailureIndices.remove(target)
-    pendingTrackChangeReason = TrackChangeReason.USER_SKIP_TO_INDEX
+    pendingTrackChangeReason = if (selectionChanged || !nativeItemUnchanged)
+      TrackChangeReason.USER_SKIP_TO_INDEX else null
     // Guard against IllegalSeekPositionException: `seekTo(index, 0L)`
     // throws when `index` is outside `mediaItemCount`. When the lib
     // is between `clearQueue` and the next `setMediaItems`, the
@@ -2482,7 +2489,10 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     // index — a future setQueue re-issues the seek as it sets the
     // media items.
     if (target < p.mediaItemCount) {
-      serviceBinder?.engine?.seekTo(target, 0L)
+      engine.seekTo(target, 0L)
+      if (selectionChanged && nativeItemUnchanged && pendingTrackChangeReason != null) {
+        onTrackTransition(engine, Player.MEDIA_ITEM_TRANSITION_REASON_SEEK)
+      }
     }
     rescheduleLookahead()
     recomputeCapabilities()
@@ -4303,6 +4313,12 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   @VisibleForTesting
   internal fun handleMediaItemTransition(reason: Int) {
     val p = player ?: return
+    // Priming an unselected queue does not change the active track. Announce
+    // it when skipToIndex selects it, rather than emitting (null, -1) here.
+    // A real clear still emits its empty selection because tracks is empty.
+    if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED &&
+      currentTrackIndex < 0 && tracks.isNotEmpty()
+    ) return
     val translated = translateTransitionReason(reason, p)
 
     // End-of-track sleep timer: a natural track boundary — auto-advance to the

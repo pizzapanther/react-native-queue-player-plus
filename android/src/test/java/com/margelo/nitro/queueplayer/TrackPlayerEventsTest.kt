@@ -342,6 +342,41 @@ class TrackPlayerEventsTest {
   // --- handleMediaItemTransition state-sync policy
 
   @Test
+  fun `selecting the first added track emits its track and index exactly once`() {
+    val added = track("added")
+    val events = mutableListOf<Triple<TrackItem?, Double, TrackChangeReason>>()
+    player.onTrackChange { track, index, reason, _ -> events.add(Triple(track, index, reason)) }
+
+    player.addToQueueInternal(listOf(added), null)
+    assertEquals(-1, player.currentTrackIndex)
+    assertEquals(0, player.player!!.currentMediaItemIndex)
+    assertTrue("Priming an unselected queue is not a track change", events.isEmpty())
+
+    player.skipToIndexInternal(0)
+    assertEquals(listOf(Triple(added, 0.0, TrackChangeReason.USER_SKIP_TO_INDEX)), events)
+    assertEquals(0, player.currentTrackIndex)
+    assertNull(player.pendingTrackChangeReason)
+
+    player.skipToIndexInternal(0)
+    assertEquals("Restarting the selected track must not emit again", 1, events.size)
+    assertNull(player.pendingTrackChangeReason)
+  }
+
+  @Test
+  fun `appending then skipping emits the new track exactly once`() {
+    player.setQueueInternal(listOf(track("old")))
+    val added = track("added")
+    val events = mutableListOf<Pair<TrackItem?, Double>>()
+    player.onTrackChange { track, index, _, _ -> events.add(track to index) }
+
+    player.addToQueueInternal(listOf(added), null)
+    player.skipToIndexInternal(1)
+
+    assertEquals(listOf(added to 1.0), events)
+    assertEquals(1, player.currentTrackIndex)
+  }
+
+  @Test
   fun `handleMediaItemTransition REASON_PLAYLIST_CHANGED does NOT override currentTrackIndex`() {
     // Simulate the add-into-empty-queue scenario:
     //   - mutation body set tracks + left currentTrackIndex at -1
@@ -366,14 +401,10 @@ class TrackPlayerEventsTest {
   }
 
   @Test
-  fun `handleMediaItemTransition REASON_SEEK does NOT override currentTrackIndex`() {
-    // Skip methods set currentTrackIndex via QueueSkipArithmetic
-    // before issuing player.seekTo — the subsequent REASON_SEEK
-    // listener fire must not reset it from the player.
-    player.tracks = (1..5).map {
-      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
-    }
-    player.currentTrackIndex = 3
+  fun `handleMediaItemTransition REASON_SEEK uses the settled player index`() {
+    player.setQueueInternal((1..5).map { track("t$it") })
+    player.skipToIndexInternal(3)
+    player.currentTrackIndex = 0
 
     player.handleMediaItemTransition(
       reason = Player.MEDIA_ITEM_TRANSITION_REASON_SEEK
