@@ -17,6 +17,8 @@ namespace margelo::nitro::queueplayer { enum class PlaybackModeKind; }
 namespace margelo::nitro::queueplayer { struct ShuffleResult; }
 // Forward declaration of `PlayerState` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class PlayerState; }
+// Forward declaration of `PlayerProgress` to properly resolve imports.
+namespace margelo::nitro::queueplayer { struct PlayerProgress; }
 // Forward declaration of `TrackSource` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class TrackSource; }
 // Forward declaration of `PitchCorrectionMode` to properly resolve imports.
@@ -69,8 +71,6 @@ namespace margelo::nitro::queueplayer { struct TimedMetadata; }
 namespace margelo::nitro::queueplayer { struct QueueChangeDelta; }
 // Forward declaration of `QueueChangeReason` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class QueueChangeReason; }
-// Forward declaration of `PlayerProgress` to properly resolve imports.
-namespace margelo::nitro::queueplayer { struct PlayerProgress; }
 // Forward declaration of `PlaybackError` to properly resolve imports.
 namespace margelo::nitro::queueplayer { struct PlaybackError; }
 // Forward declaration of `PlaybackErrorCode` to properly resolve imports.
@@ -121,6 +121,8 @@ namespace margelo::nitro::queueplayer { struct LookaheadCacheConfig; }
 #include "JShuffleResult.hpp"
 #include "PlayerState.hpp"
 #include "JPlayerState.hpp"
+#include "PlayerProgress.hpp"
+#include "JPlayerProgress.hpp"
 #include "TrackSource.hpp"
 #include "JTrackSource.hpp"
 #include "PitchCorrectionMode.hpp"
@@ -186,9 +188,7 @@ namespace margelo::nitro::queueplayer { struct LookaheadCacheConfig; }
 #include "JFunc_void_QueueChangeDelta_double_QueueChangeReason.hpp"
 #include "JQueueChangeDelta.hpp"
 #include "JQueueChangeReason.hpp"
-#include "PlayerProgress.hpp"
 #include "JFunc_void_PlayerProgress.hpp"
-#include "JPlayerProgress.hpp"
 #include "JFunc_void_double_double.hpp"
 #include "PlaybackError.hpp"
 #include "JFunc_void_PlaybackError.hpp"
@@ -720,6 +720,11 @@ namespace margelo::nitro::queueplayer {
     static const auto method = _javaPart->javaClassStatic()->getMethod<double()>("getCurrentTrackIndex");
     auto __result = method(_javaPart);
     return __result;
+  }
+  PlayerProgress JHybridTrackPlayerSpec::getProgress() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPlayerProgress>()>("getProgress");
+    auto __result = method(_javaPart);
+    return __result->toCpp();
   }
   std::optional<TrackSource> JHybridTrackPlayerSpec::getCurrentTrackSource() {
     static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JTrackSource>()>("getCurrentTrackSource");

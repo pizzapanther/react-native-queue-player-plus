@@ -14,9 +14,9 @@ final class ActiveItemEngineStub: PlaybackEngine {
   var attachedQueueItemIds: [String] { [] }
   var isFadePendingOrActive: Bool { false }
   var currentMediaItemIndex: Int { item == nil ? -1 : 0 }
-  var currentPositionSeconds: TimeInterval { 0 }
-  var currentDurationSeconds: TimeInterval { 0 }
-  var bufferedPositionSeconds: TimeInterval { 0 }
+  var currentPositionSeconds: TimeInterval = 0
+  var currentDurationSeconds: TimeInterval = 0
+  var bufferedPositionSeconds: TimeInterval = 0
   var isPlaying: Bool { false }
   var timeControlStatus: AVPlayer.TimeControlStatus { .paused }
   var delegate: PlaybackEngineDelegate?

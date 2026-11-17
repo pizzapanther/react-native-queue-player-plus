@@ -694,6 +694,18 @@ open class HybridTrackPlayerSpec_cxx {
   }
   
   @inline(__always)
+  public final func getProgress() -> bridge.Result_PlayerProgress_ {
+    do {
+      let __result = try self.__implementation.getProgress()
+      let __resultCpp = __result
+      return bridge.create_Result_PlayerProgress_(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_PlayerProgress_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
   public final func getCurrentTrackSource() -> bridge.Result_std__optional_TrackSource__ {
     do {
       let __result = try self.__implementation.getCurrentTrackSource()

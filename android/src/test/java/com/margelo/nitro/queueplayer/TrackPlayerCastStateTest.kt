@@ -60,6 +60,22 @@ class TrackPlayerCastStateTest {
   }
 
   @Test
+  fun `getProgress uses receiver values without a local queue or subscription`() {
+    remote.backingPositionMs.value = 12_500
+    remote.backingDurationMs.value = 90_000
+    PlaybackStateRouter.setActive(remote)
+    val snapshot = player.getProgress()
+    assertEquals(PlayerProgress(12.5, 90.0, 0.0), snapshot)
+    val seen = mutableListOf<PlayerProgress>()
+    val dispose = player.onProgress { seen.add(it) }
+    player.emitProgressTick()
+    assertEquals(listOf(snapshot), seen)
+    remote.backingDurationMs.value = -1
+    assertEquals(0.0, player.getProgress().duration, 0.0)
+    dispose()
+  }
+
+  @Test
   fun `reports the receiver's playing state during a cast session`() {
     remote.reportState(RemotePlaybackState.PLAYING)
     PlaybackStateRouter.setActive(remote)

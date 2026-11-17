@@ -42,6 +42,8 @@ namespace margelo::nitro::queueplayer { enum class RemoteSkipMode; }
 namespace margelo::nitro::queueplayer { struct ShuffleResult; }
 // Forward declaration of `PlayerState` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class PlayerState; }
+// Forward declaration of `PlayerProgress` to properly resolve imports.
+namespace margelo::nitro::queueplayer { struct PlayerProgress; }
 // Forward declaration of `TrackSource` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class TrackSource; }
 // Forward declaration of `BufferState` to properly resolve imports.
@@ -60,8 +62,6 @@ namespace margelo::nitro::queueplayer { struct TimedMetadata; }
 namespace margelo::nitro::queueplayer { struct QueueChangeDelta; }
 // Forward declaration of `QueueChangeReason` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class QueueChangeReason; }
-// Forward declaration of `PlayerProgress` to properly resolve imports.
-namespace margelo::nitro::queueplayer { struct PlayerProgress; }
 // Forward declaration of `PlaybackError` to properly resolve imports.
 namespace margelo::nitro::queueplayer { struct PlaybackError; }
 // Forward declaration of `PlaybackErrorCode` to properly resolve imports.
@@ -129,6 +129,7 @@ namespace margelo::nitro::queueplayer { struct NowPlayingFormatAndroidExtras; }
 #include "RemoteSkipMode.hpp"
 #include "ShuffleResult.hpp"
 #include "PlayerState.hpp"
+#include "PlayerProgress.hpp"
 #include "TrackSource.hpp"
 #include "BufferState.hpp"
 #include "SkipCapability.hpp"
@@ -139,7 +140,6 @@ namespace margelo::nitro::queueplayer { struct NowPlayingFormatAndroidExtras; }
 #include "TimedMetadata.hpp"
 #include "QueueChangeDelta.hpp"
 #include "QueueChangeReason.hpp"
-#include "PlayerProgress.hpp"
 #include "PlaybackError.hpp"
 #include "PlaybackErrorCode.hpp"
 #include "BrowseSnapshot.hpp"
@@ -450,6 +450,14 @@ namespace margelo::nitro::queueplayer {
     }
     inline double getCurrentTrackIndex() override {
       auto __result = _swiftPart.getCurrentTrackIndex();
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline PlayerProgress getProgress() override {
+      auto __result = _swiftPart.getProgress();
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

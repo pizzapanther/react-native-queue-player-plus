@@ -153,6 +153,10 @@ abstract class HybridTrackPlayerSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
+  abstract fun getProgress(): PlayerProgress
+  
+  @DoNotStrip
+  @Keep
   abstract fun getCurrentTrackSource(): TrackSource?
   
   @DoNotStrip

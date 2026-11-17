@@ -43,6 +43,7 @@ public protocol HybridTrackPlayerSpec_protocol: HybridObject {
   func shuffleQueue() throws -> Promise<ShuffleResult>
   func getState() throws -> PlayerState
   func getCurrentTrackIndex() throws -> Double
+  func getProgress() throws -> PlayerProgress
   func getCurrentTrackSource() throws -> TrackSource?
   func getPlaybackSpeed() throws -> Double
   func getPitchCorrectionMode() throws -> PitchCorrectionMode

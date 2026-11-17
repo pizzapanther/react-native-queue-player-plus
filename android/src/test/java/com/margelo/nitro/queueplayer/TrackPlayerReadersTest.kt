@@ -60,6 +60,39 @@ class TrackPlayerReadersTest {
   // --- Remote controls
 
   @Test
+  fun `getProgress returns zeros before configuration and with an empty queue`() {
+    val zero = PlayerProgress(0.0, 0.0, 0.0)
+    assertEquals(zero, TrackPlayer().getProgress())
+    assertEquals(zero, player.getProgress())
+  }
+
+  @Test
+  fun `getProgress reads paused position without subscribers and does not consume the next event`() {
+    val track = TrackItem(
+      id = "local", url = "file:///queue-player-test/progress.m4a",
+      title = null, artist = null, album = null, duration = null, artworkUrl = null,
+      extras = null, replayGainTrackGain = null, replayGainTrackPeak = null,
+      replayGainAlbumGain = null, replayGainAlbumPeak = null)
+    player.setQueueInternal(listOf(track))
+    serviceHandle.engine.seekTo(0, 12_500)
+    val snapshot = player.getProgress()
+    assertEquals(12.5, snapshot.position, 0.001)
+    assertEquals(0.0, snapshot.duration, 0.0)
+    assertEquals(0.0, snapshot.buffered, 0.0)
+
+    val seen = mutableListOf<PlayerProgress>()
+    val dispose = player.onProgress { seen.add(it) }
+    assertEquals(snapshot, player.getProgress())
+    assertTrue(seen.isEmpty())
+    player.emitProgressTick()
+    assertEquals(listOf(snapshot), seen)
+    dispose()
+
+    player.clearQueueInternal()
+    assertEquals(PlayerProgress(0.0, 0.0, 0.0), player.getProgress())
+  }
+
+  @Test
   fun `getRemoteControls defaults to track mode with 15s intervals`() {
     val rc = player.getRemoteControls()
     assertEquals(RemoteSkipMode.TRACK, rc.skipMode)

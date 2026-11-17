@@ -1750,6 +1750,15 @@ namespace margelo::nitro::queueplayer::bridge::swift {
     return Result<PlayerState>::withError(error);
   }
   
+  // pragma MARK: Result<PlayerProgress>
+  using Result_PlayerProgress_ = Result<PlayerProgress>;
+  inline Result_PlayerProgress_ create_Result_PlayerProgress_(const PlayerProgress& value) noexcept {
+    return Result<PlayerProgress>::withValue(value);
+  }
+  inline Result_PlayerProgress_ create_Result_PlayerProgress_(const std::exception_ptr& error) noexcept {
+    return Result<PlayerProgress>::withError(error);
+  }
+  
   // pragma MARK: Result<std::optional<TrackSource>>
   using Result_std__optional_TrackSource__ = Result<std::optional<TrackSource>>;
   inline Result_std__optional_TrackSource__ create_Result_std__optional_TrackSource__(std::optional<TrackSource> value) noexcept {

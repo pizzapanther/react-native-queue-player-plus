@@ -3297,6 +3297,8 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   override fun getVolume(): Double =
     syncMain { volumeState.toDouble() }
 
+  override fun getProgress(): PlayerProgress = syncMain { readProgress() }
+
   // --- Events — public registration surface
   //
   // Each event stores a single callback and returns an unsubscribe
@@ -4844,6 +4846,14 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     // paths below (cast, empty-queue, local). Milestones + fully-buffered run
     // as separate calls in the tick runnable, so they stay full-rate.
     if (!progressEmissionGate.shouldEmit(SystemClock.uptimeMillis())) return
+    if (serviceBinder?.engine == null &&
+      com.margelo.nitro.queueplayer.cast.PlaybackStateRouter.activeRemote() == null) return
+    val progress = readProgress()
+    progressListeners.forEach { it(progress) }
+  }
+
+  /** Read on main without changing event throttling or requiring subscribers. */
+  private fun readProgress(): PlayerProgress {
     // During an active cast session the local engine is paused, so report
     // the receiver's position + duration — the tick keeps running while
     // casting, so this is the progress source the UI follows.
@@ -4857,10 +4867,9 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
         duration = rDuration,
         buffered = 0.0,
       )
-      progressListeners.forEach { it(rProgress) }
-      return
+      return rProgress
     }
-    val engine = serviceBinder?.engine ?: return
+    val engine = serviceBinder?.engine
     // Lib canonical state takes precedence over the engine's
     // raw position read. After `clearQueue` / queue-end ExoPlayer
     // can briefly retain the prior item's `currentPosition` and
@@ -4868,10 +4877,8 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     // would surface to JS as a stale `3:47 / 3:51` even though
     // `tracks.isEmpty()` and `currentTrackIndex == -1`. Empty-
     // queue progress is `0 / 0`.
-    if (tracks.isEmpty() || currentTrackIndex < 0) {
-      val zero = PlayerProgress(position = 0.0, duration = 0.0, buffered = 0.0)
-      progressListeners.forEach { it(zero) }
-      return
+    if (engine == null || tracks.isEmpty() || currentTrackIndex < 0) {
+      return PlayerProgress(position = 0.0, duration = 0.0, buffered = 0.0)
     }
     // Read via the engine accessor (not `player.currentPosition`)
     // so a CrossfadeEngine in the middle of a fade reports the
@@ -4889,9 +4896,8 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
       (bufferedMs - positionMs) / MS_PER_SECOND
     }
     val safePosition = if (position.isFinite()) position else 0.0
-    val progress = PlayerProgress(
+    return PlayerProgress(
       position = safePosition, duration = duration, buffered = buffered)
-    progressListeners.forEach { it(progress) }
   }
 
   /**

@@ -215,6 +215,7 @@ final class ControllableRemoteSession: CastSessionRemotePlayer {
   func firePosition(positionMs: Int64, durationMs: Int64 = 0, bufferedMs: Int64 = 0) {
     lastPositionMs = positionMs
     lastDurationMs = durationMs
+    lastBufferedMs = bufferedMs
     positionCb?(positionMs, durationMs, bufferedMs)
   }
 

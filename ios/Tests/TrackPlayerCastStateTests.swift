@@ -30,6 +30,16 @@ final class TrackPlayerCastStateTests: XCTestCase {
     XCTAssertEqual(try TrackPlayer().getState(), .playing)
   }
 
+  func testProgressReadsReceiverWithoutLocalQueueOrSubscribers() throws {
+    let session = ControllableRemoteSession()
+    session.firePosition(positionMs: 12_500, durationMs: 90_000, bufferedMs: 20_000)
+    try router.setActive(session)
+    let progress = try TrackPlayer().getProgress()
+    XCTAssertEqual(progress.position, 12.5)
+    XCTAssertEqual(progress.duration, 90)
+    XCTAssertEqual(progress.buffered, 7.5)
+  }
+
   func testReportsReceiverPausedDuringCastSession() throws {
     try activateReporting(.paused)
     XCTAssertEqual(try TrackPlayer().getState(), .paused)

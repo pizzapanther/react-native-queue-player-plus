@@ -548,7 +548,7 @@ export type StateChangeReason =
   | 'sleep-timer';
 
 /**
- * Progress snapshot emitted by `onProgress`. Positions in seconds,
+ * Progress snapshot returned by `getProgress` and emitted by `onProgress`. Positions in seconds,
  * driven by the native periodic time observer at ~2 Hz. Wrapped in a
  * struct (rather than three positional `number` callback args) so
  * future progress fields can be added without a breaking spec change.

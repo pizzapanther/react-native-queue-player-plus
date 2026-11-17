@@ -104,6 +104,19 @@ function NowPlaying() {
 
 The player is a singleton — `getTrackPlayer()` always returns the same instance. There is no class to instantiate. The same pattern applies to `getEqualizer()`, `getVisualizer()`, and `getCastManager()`.
 
+### Reading progress
+
+Read the current progress without subscribing to events:
+
+```ts
+const { position, duration, buffered } = getTrackPlayer().getProgress();
+```
+
+The synchronous snapshot has the same shape and units as `onProgress`: all
+values are seconds, and `buffered` is the amount buffered ahead of `position`.
+It works while paused and uses receiver progress during casting. Unknown
+duration or buffered amount is `0`; an inactive local queue returns all zeros.
+
 ### Timed stream metadata
 
 Subscribe to title, artist, album title, and artwork updates carried in the

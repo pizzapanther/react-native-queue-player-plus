@@ -44,6 +44,7 @@ namespace margelo::nitro::queueplayer {
       prototype.registerHybridMethod("shuffleQueue", &HybridTrackPlayerSpec::shuffleQueue);
       prototype.registerHybridMethod("getState", &HybridTrackPlayerSpec::getState);
       prototype.registerHybridMethod("getCurrentTrackIndex", &HybridTrackPlayerSpec::getCurrentTrackIndex);
+      prototype.registerHybridMethod("getProgress", &HybridTrackPlayerSpec::getProgress);
       prototype.registerHybridMethod("getCurrentTrackSource", &HybridTrackPlayerSpec::getCurrentTrackSource);
       prototype.registerHybridMethod("getPlaybackSpeed", &HybridTrackPlayerSpec::getPlaybackSpeed);
       prototype.registerHybridMethod("getPitchCorrectionMode", &HybridTrackPlayerSpec::getPitchCorrectionMode);

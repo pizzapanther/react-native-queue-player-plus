@@ -84,6 +84,7 @@ namespace margelo::nitro::queueplayer {
     std::shared_ptr<Promise<ShuffleResult>> shuffleQueue() override;
     PlayerState getState() override;
     double getCurrentTrackIndex() override;
+    PlayerProgress getProgress() override;
     std::optional<TrackSource> getCurrentTrackSource() override;
     double getPlaybackSpeed() override;
     PitchCorrectionMode getPitchCorrectionMode() override;

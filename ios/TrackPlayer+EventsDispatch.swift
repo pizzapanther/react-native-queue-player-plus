@@ -318,54 +318,47 @@ extension TrackPlayer {
   /// `engine.currentPositionSeconds` / `currentDurationSeconds` /
   /// `bufferedPositionSeconds` (computed properties on the
   /// engine surface that delegate to whichever leg is leading).
-  internal func emitProgressIfSubscribed() {
-    guard !progressListeners.isEmpty else { return }
+  /// Shared by the snapshot getter and event emitter. Does not touch cadence
+  /// or crossfade movement bookkeeping, so reads cannot suppress a later event.
+  internal func localProgressSnapshot() -> PlayerProgress {
     let position: TimeInterval
     let duration: TimeInterval
     let buffered: TimeInterval
-    // Whether the playhead is actively advancing. The throttle applies only
-    // while playing (the streaming firehose); a paused player's ticks are
-    // discrete (seek / stop / repeat-rewind) and must always deliver so the UI
-    // reflects the move — otherwise a paused seek under a >500ms interval is
-    // lost until playback resumes.
-    let isPlaying: Bool
     if let item = self.player?.currentItem {
       position = CMTimeGetSeconds(item.currentTime())
       let rawDuration = CMTimeGetSeconds(item.duration)
-      duration = (rawDuration.isFinite && rawDuration > 0) ? rawDuration : 0.0
+      duration = (rawDuration.isFinite && rawDuration > 0) ? rawDuration : 0
       buffered = loadedAheadSeconds(for: item, currentPosition: position)
+    } else if let engine = self.engine {
+      position = engine.currentPositionSeconds
+      duration = engine.currentDurationSeconds
+      buffered = max(0, engine.bufferedPositionSeconds - position)
+    } else {
+      return PlayerProgress(position: 0, duration: 0, buffered: 0)
+    }
+    return PlayerProgress(
+      position: position.isFinite ? position : 0,
+      duration: duration.isFinite ? duration : 0,
+      buffered: buffered.isFinite ? buffered : 0)
+  }
+
+  internal func emitProgressIfSubscribed() {
+    guard !progressListeners.isEmpty else { return }
+    let progress = localProgressSnapshot()
+    let isPlaying: Bool
+    if self.player?.currentItem != nil {
       isPlaying = (self.player?.rate ?? 0) != 0
     } else if let engine = self.engine {
-      // Engine-driven path (CrossfadeEngine): the fallback timer fires
-      // unconditionally. While paused, emit ONLY when the playhead moved since
-      // the last emit (a seek / stop / repeat-rewind), mirroring the gapless
-      // periodic observer which fires once on seek completion even while
-      // paused — otherwise the post-stop "position reset to 0" tick never
-      // reaches consumers. A steady pause (position unchanged) still skips, so
-      // identical tuples aren't re-published every 0.5s.
-      position = engine.currentPositionSeconds
-      // Qualify Swift.abs: a bare `abs(...)` is ambiguous against Darwin's
-      // C `abs` when that's in scope (the library build context), so name
-      // the Swift overload explicitly — matches BiquadCoefficients.
-      let playheadDelta = Swift.abs(position - self.lastEmittedCrossfadePosition)
-      let moved = playheadDelta > 0.001
+      // Paused crossfade ticks emit only for a seek/stop/rewind. The getter
+      // must not advance this marker or consume that pending event.
+      let moved = Swift.abs(progress.position - self.lastEmittedCrossfadePosition) > 0.001
       guard engine.isPlaying || moved else { return }
-      self.lastEmittedCrossfadePosition = position
-      duration = engine.currentDurationSeconds
-      let bufferedAbs = engine.bufferedPositionSeconds
-      buffered = max(0, bufferedAbs - position)
+      self.lastEmittedCrossfadePosition = progress.position
       isPlaying = engine.isPlaying
     } else {
       return
     }
-    let safePosition = position.isFinite ? position : 0.0
-    let safeDuration = duration.isFinite ? duration : 0.0
-    let progress = PlayerProgress(
-      position: safePosition, duration: safeDuration, buffered: buffered)
-    // Throttle only the playing firehose; paused ticks (discrete seek/stop
-    // results) always deliver. The crossfade movement bookkeeping above already
-    // ran this tick, and milestones + buffer state are separate calls, so both
-    // stay full-rate regardless of the throttle.
+    // Paused ticks report discrete movements immediately; throttle only playback.
     guard !isPlaying || self.progressEmissionGate.shouldEmit(nowMs: self.monotonicNowMs()) else {
       return
     }
@@ -692,11 +685,18 @@ extension TrackPlayer {
     // configured cadence caps cast progress too (the receiver pushes at its own
     // rate, so the effective cadence is min(receiver rate, configured interval)).
     guard self.progressEmissionGate.shouldEmit(nowMs: self.monotonicNowMs()) else { return }
+    let progress = remoteProgressSnapshot(
+      positionMs: positionMs, durationMs: durationMs, bufferedMs: bufferedMs)
+    progressListeners.forEach { $0(progress) }
+  }
+
+  internal func remoteProgressSnapshot(
+    positionMs: Int64, durationMs: Int64, bufferedMs: Int64
+  ) -> PlayerProgress {
     let position = TimeInterval(max(0, positionMs)) / 1000.0
     let duration = TimeInterval(max(0, durationMs)) / 1000.0
-    let buffered = TimeInterval(max(0, bufferedMs - positionMs)) / 1000.0
-    let progress = PlayerProgress(position: position, duration: duration, buffered: buffered)
-    progressListeners.forEach { $0(progress) }
+    let buffered = max(0, TimeInterval(bufferedMs) - TimeInterval(positionMs)) / 1000.0
+    return PlayerProgress(position: position, duration: duration, buffered: buffered)
   }
 
   /// Fan a cast receiver's track advance to JS `onTrackChange` and update

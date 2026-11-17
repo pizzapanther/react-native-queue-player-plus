@@ -214,6 +214,14 @@ export interface TrackPlayer extends HybridObject<{
      */
     getCurrentTrackIndex(): number;
     /**
+     * Current progress snapshot, using the same seconds-based values as
+     * `onProgress`. `buffered` is seconds buffered ahead of `position`.
+     * Reads live native state without subscribing or waiting for a progress
+     * tick. Uses receiver progress while casting. Returns zeros when no track
+     * is active; unknown duration or buffered amount is 0.
+     */
+    getProgress(): PlayerProgress;
+    /**
      * How the active track is being played: `'local'` (file://), `'cached'`
      * (http(s):// served from the lookahead cache), or `'streaming'`
      * (http(s):// served from the network). `undefined` when there is no

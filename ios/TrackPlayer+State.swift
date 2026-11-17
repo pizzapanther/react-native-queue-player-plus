@@ -38,6 +38,19 @@ extension TrackPlayer {
     // Nitrogen spec types this return as Double; bridge the internal Int.
     return onPlayerQueueSync { Double(self.currentTrackIndex) }
   }
+  func getProgress() throws -> PlayerProgress {
+    return onPlayerQueueSync {
+      if let remote = PlaybackStateRouter.shared.activeRemote() {
+        return self.remoteProgressSnapshot(
+          positionMs: remote.lastPositionMs, durationMs: remote.lastDurationMs,
+          bufferedMs: remote.lastBufferedMs)
+      }
+      guard !self.tracks.isEmpty, self.currentTrackIndex >= 0 else {
+        return PlayerProgress(position: 0, duration: 0, buffered: 0)
+      }
+      return self.localProgressSnapshot()
+    }
+  }
   func getCurrentTrackSource() throws -> TrackSource? {
     return onPlayerQueueSync { self.currentTrackSource }
   }

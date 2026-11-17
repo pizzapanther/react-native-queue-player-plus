@@ -31,6 +31,8 @@ namespace margelo::nitro::queueplayer { struct RemoteControlOptions; }
 namespace margelo::nitro::queueplayer { struct ShuffleResult; }
 // Forward declaration of `PlayerState` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class PlayerState; }
+// Forward declaration of `PlayerProgress` to properly resolve imports.
+namespace margelo::nitro::queueplayer { struct PlayerProgress; }
 // Forward declaration of `TrackSource` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class TrackSource; }
 // Forward declaration of `BufferState` to properly resolve imports.
@@ -49,8 +51,6 @@ namespace margelo::nitro::queueplayer { struct TimedMetadata; }
 namespace margelo::nitro::queueplayer { struct QueueChangeDelta; }
 // Forward declaration of `QueueChangeReason` to properly resolve imports.
 namespace margelo::nitro::queueplayer { enum class QueueChangeReason; }
-// Forward declaration of `PlayerProgress` to properly resolve imports.
-namespace margelo::nitro::queueplayer { struct PlayerProgress; }
 // Forward declaration of `PlaybackError` to properly resolve imports.
 namespace margelo::nitro::queueplayer { struct PlaybackError; }
 // Forward declaration of `BrowseSnapshot` to properly resolve imports.
@@ -84,6 +84,7 @@ namespace margelo::nitro::queueplayer { struct NowPlayingFormat; }
 #include "RemoteControlOptions.hpp"
 #include "ShuffleResult.hpp"
 #include "PlayerState.hpp"
+#include "PlayerProgress.hpp"
 #include "TrackSource.hpp"
 #include "BufferState.hpp"
 #include "SkipCapability.hpp"
@@ -94,7 +95,6 @@ namespace margelo::nitro::queueplayer { struct NowPlayingFormat; }
 #include "TimedMetadata.hpp"
 #include "QueueChangeDelta.hpp"
 #include "QueueChangeReason.hpp"
-#include "PlayerProgress.hpp"
 #include "PlaybackError.hpp"
 #include "BrowseSnapshot.hpp"
 #include "BrowseItem.hpp"
@@ -170,6 +170,7 @@ namespace margelo::nitro::queueplayer {
       virtual std::shared_ptr<Promise<ShuffleResult>> shuffleQueue() = 0;
       virtual PlayerState getState() = 0;
       virtual double getCurrentTrackIndex() = 0;
+      virtual PlayerProgress getProgress() = 0;
       virtual std::optional<TrackSource> getCurrentTrackSource() = 0;
       virtual double getPlaybackSpeed() = 0;
       virtual PitchCorrectionMode getPitchCorrectionMode() = 0;
