@@ -1,6 +1,6 @@
 {
   "name": "react-native-queue-player",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Nitro Modules audio playback library for React Native — gapless, EQ, crossfade, automotive, voice, casting",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/index.d.ts",
@@ -139,6 +139,12 @@
   },
   "jest": {
     "preset": "@react-native/jest-preset",
+    "transform": {
+      "^.+\\.(js|ts|tsx)$": [
+        "babel-jest",
+        { "presets": ["module:@react-native/babel-preset"] }
+      ]
+    },
     "modulePathIgnorePatterns": [
       "<rootDir>/lib/",
       "<rootDir>/nitrogen/"

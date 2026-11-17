@@ -356,6 +356,11 @@ export interface TrackPlayer
   getSleepTimer(): SleepTimerState;
 
   // Events — each returns a disposer. Disposer invalidates the callback.
+  /**
+   * Fires only when the playback state changes. Repeated reports of the
+   * same state are ignored, even if their reason differs. Use `getState()`
+   * for the current value; subscribing does not emit an initial snapshot.
+   */
   onStateChange(
     callback: (state: PlayerState, reason: StateChangeReason) => void
   ): () => void;

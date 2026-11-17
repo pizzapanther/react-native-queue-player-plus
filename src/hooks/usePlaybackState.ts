@@ -10,7 +10,7 @@ export interface PlaybackStateSnapshot {
 
 const INITIAL: PlaybackStateSnapshot = { state: 'none', reason: 'system' };
 
-/** Subscribes to native `onStateChange` updates. */
+/** Updates only when the playback state changes; duplicate reasons are ignored. */
 export function usePlaybackState(): PlaybackStateSnapshot {
   const [snapshot, setSnapshot] = useState<PlaybackStateSnapshot>(() => {
     // Pull the current state synchronously on first render so consumers
@@ -25,7 +25,9 @@ export function usePlaybackState(): PlaybackStateSnapshot {
   useEffect(() => {
     const player = getTrackPlayer();
     const dispose = player.onStateChange((state, reason) => {
-      setSnapshot({ state, reason });
+      setSnapshot((previous) =>
+        previous.state === state ? previous : { state, reason }
+      );
     });
     return dispose;
   }, []);

@@ -311,6 +311,11 @@ export interface TrackPlayer extends HybridObject<{
     getSkipCapability(): SkipCapability;
     /** Current sleep-timer state (inactive when no timer is armed). */
     getSleepTimer(): SleepTimerState;
+    /**
+     * Fires only when the playback state changes. Repeated reports of the
+     * same state are ignored, even if their reason differs. Use `getState()`
+     * for the current value; subscribing does not emit an initial snapshot.
+     */
     onStateChange(callback: (state: PlayerState, reason: StateChangeReason) => void): () => void;
     /**
      * Fires when the active track changes — user skip, auto-advance,

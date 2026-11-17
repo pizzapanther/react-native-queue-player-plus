@@ -4,6 +4,6 @@ export interface PlaybackStateSnapshot {
     /** Why the state last changed. `'system'` for the initial render. */
     reason: StateChangeReason;
 }
-/** Subscribes to native `onStateChange` updates. */
+/** Updates only when the playback state changes; duplicate reasons are ignored. */
 export declare function usePlaybackState(): PlaybackStateSnapshot;
 //# sourceMappingURL=usePlaybackState.d.ts.map
