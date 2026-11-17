@@ -57,6 +57,49 @@ class TrackPlayerAudioFocusTest {
   // --- Audio attributes applied on configure
 
   @Test
+  fun `focus loss regain and output disconnect do not emit playback errors`() {
+    val errors = mutableListOf<PlaybackError>()
+    val dispose = player.onError { errors.add(it) }
+    val handler = player.mediaSessionCommandHandler
+    handler.onAudioFocusEvent(AudioFocusErrorMapping.mapPlayWhenReadyReason(
+      Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS)!!)
+    handler.onAudioFocusEvent(AudioFocusErrorMapping.mapSuppressionReason(
+      Player.PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS,
+      Player.PLAYBACK_SUPPRESSION_REASON_NONE)!!)
+    handler.onAudioFocusEvent(AudioFocusErrorMapping.mapSuppressionReason(
+      Player.PLAYBACK_SUPPRESSION_REASON_NONE,
+      Player.PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS)!!)
+    handler.onBecomingNoisy()
+    assertTrue("normal focus and route transitions are not playback failures", errors.isEmpty())
+
+    // Genuine decoder failures still reach the same subscription.
+    player.onError(serviceHandle.engine, androidx.media3.common.PlaybackException(
+      "decoder failed", null, androidx.media3.common.PlaybackException.ERROR_CODE_DECODING_FAILED), -1)
+    assertEquals(1, errors.size)
+    assertEquals(PlaybackErrorCode.DECODING_FAILED, errors.single().code)
+    dispose()
+  }
+
+  @Test
+  fun `focus loss and output disconnect retain their state change reasons`() {
+    player.setQueueInternal(listOf(TrackItem(
+      "local", "file:///queue-player-test/focus.m4a", null, null, null, null,
+      null, null, null, null, null, null)))
+    serviceHandle.engine.stop() // Keep a selected item with an idle/paused engine.
+    val states = mutableListOf<Pair<PlayerState, StateChangeReason>>()
+    val dispose = player.onStateChange { state, reason -> states.add(state to reason) }
+    for ((nativeReason, expected) in listOf(
+      Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS to StateChangeReason.INTERRUPTION,
+      Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY to StateChangeReason.ROUTE_CHANGE,
+    )) {
+      player.emitRemoteState(PlayerState.PLAYING, StateChangeReason.SYSTEM)
+      player.onStateMaybeChanged(serviceHandle.engine, nativeReason)
+      assertEquals(PlayerState.PAUSED to expected, states.last())
+    }
+    dispose()
+  }
+
+  @Test
   fun `configure installs MEDIA usage + MUSIC content-type audio attributes`() {
     val attrs = player.player!!.audioAttributes
     assertEquals(

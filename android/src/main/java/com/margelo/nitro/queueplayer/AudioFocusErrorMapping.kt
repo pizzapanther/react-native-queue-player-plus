@@ -4,15 +4,14 @@ import androidx.media3.common.Player
 
 /**
  * Maps Media3 [Player.Listener] audio-focus reason ints to the lib-
- * standardized `nativeDomain` string + a stable human-readable
- * message used by `PlaybackService` when firing the corresponding
- * non-fatal `PlaybackError` through `TrackPlayer`'s error channel.
+ * diagnostic `nativeDomain` string + a stable human-readable message.
+ * These normal focus transitions are logged only when diagnostic logging
+ * is enabled; they are not sent through `TrackPlayer.onError`.
  *
  * Media3 already drives the actual pause / duck / resume response
  * via `setAudioAttributes(handleAudioFocus = true)`. The mapping
- * exists purely so consumers can render UX (interruption banner,
- * resume prompt) without re-deriving the focus state from the
- * playback-state stream.
+ * exists purely for native diagnostics. Consumers observe resulting
+ * transitions through the playback-state stream.
  *
  * **`AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK` is intentionally NOT
  * surfaced.** Media3 ducks internally on can-duck losses and does
@@ -26,10 +25,8 @@ import androidx.media3.common.Player
  * surface.
  *
  * Three `nativeDomain` strings, all sharing the `AUDIO_FOCUS_`
- * prefix so JS consumers can branch on
- * `nativeDomain.startsWith("AUDIO_FOCUS_")` and treat any focus
- * event as a single category when they don't care about the sub-
- * state. Unknown reason ints map to `null` so the caller drops
+ * prefix so native logs can group focus events. Unknown reason ints
+ * map to `null` so the caller drops
  * them — keeps unknown future codes from leaking through as
  * malformed events.
  */

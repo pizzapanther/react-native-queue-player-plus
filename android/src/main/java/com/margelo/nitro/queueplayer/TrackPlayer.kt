@@ -1255,32 +1255,20 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
         cachedSkipCapability
 
       override fun onAudioFocusEvent(mapping: AudioFocusErrorMapping.Mapping) {
-        val err = PlaybackError(
-          code = PlaybackErrorCode.UNKNOWN,
-          message = mapping.message,
-          fatal = false,
-          nativeCode = 0.0,
-          nativeDomain = mapping.nativeDomain,
-          nativeMessage = mapping.message,
-          queueItemId = "",
-          url = "",
-        )
-        errorListeners.forEach { it(err) }
+        // Focus handoffs (including Android Auto connection) are normal
+        // transport changes, not failures. Media3 owns pause/duck/resume;
+        // the engine delegate reports the resulting playback state.
+        if (config.enableDiagnosticLogs == true) {
+          Log.d("QueuePlayer.AudioFocus", "${mapping.nativeDomain}: ${mapping.message}")
+        }
       }
 
       override fun onBecomingNoisy() {
-        val message = "Audio output route changed; Media3 has paused playback."
-        val err = PlaybackError(
-          code = PlaybackErrorCode.UNKNOWN,
-          message = message,
-          fatal = false,
-          nativeCode = 0.0,
-          nativeDomain = "AUDIO_BECOMING_NOISY",
-          nativeMessage = message,
-          queueItemId = "",
-          url = "",
-        )
-        errorListeners.forEach { it(err) }
+        // Output disconnects use onStateChange's route-change reason. Do
+        // not also turn the expected safety pause into a playback error.
+        if (config.enableDiagnosticLogs == true) {
+          Log.d("QueuePlayer.AudioFocus", "Audio output route changed; Media3 handles playback pause.")
+        }
       }
     }
 

@@ -534,8 +534,8 @@ class PlaybackService : HeadlessJsMediaService() {
 
   /**
    * [Player.Listener] that translates Media3's audio-focus-driven
-   * state changes into typed [PlaybackError] events on the JS
-   * surface. `onPlayWhenReadyChanged` with reason
+   * state changes into optional native diagnostics. These are normal
+   * interruptions, not JS playback errors. `onPlayWhenReadyChanged` with reason
    * `PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS` carries
    * permanent loss; `onPlaybackSuppressionReasonChanged` carries
    * transient loss + regain. Re-attached to the new player on every
@@ -560,9 +560,8 @@ class PlaybackService : HeadlessJsMediaService() {
    * unplug, A2DP disconnect, USB DAC removal). Media3 already pauses
    * playback in response to this broadcast via
    * `setHandleAudioBecomingNoisy(true)` on the bound player; the
-   * receiver is purely a JS-event side-channel so consumers can render
-   * UX (e.g. "Paused — headphones disconnected" toast) without
-   * inferring the cause from a state-change emit. The receiver is NOT
+   * receiver is purely a native diagnostic side-channel. Consumers observe
+   * the resulting state change with reason `route-change`. The receiver is NOT
    * coupled to a specific player instance — [configurePlayer] swaps
    * the ExoPlayer without disturbing the registration; the next
    * broadcast routes through whatever handler is currently registered.
@@ -1700,24 +1699,20 @@ class PlaybackService : HeadlessJsMediaService() {
     fun onMediaSkipPrevious()
 
     /**
-     * Surface a granular Media3 audio-focus event on the JS `onError`
-     * channel. The lib does NOT change player response from here —
+     * Record a granular Media3 audio-focus diagnostic. The lib does NOT
+     * change player response from here —
      * Media3's `setAudioAttributes(handleAudioFocus = true)` keeps
-     * driving pause / duck / auto-resume. The handler just emits the
-     * typed [PlaybackError] so JS consumers can render UX
-     * (interruption banner, resume-prompt, etc.) without re-deriving
-     * the focus kind from the playback-state stream.
+     * driving pause / duck / auto-resume. Resulting state changes reach
+     * JS through the engine delegate, not the error channel.
      */
     fun onAudioFocusEvent(mapping: AudioFocusErrorMapping.Mapping)
 
     /**
-     * Surface an `AUDIO_BECOMING_NOISY` event on the JS `onError`
-     * channel. Fires on headphone unplug / A2DP disconnect / USB DAC
+     * Record an output-route diagnostic on headphone unplug / A2DP disconnect / USB DAC
      * removal. The lib does NOT pause the player here —
      * `setHandleAudioBecomingNoisy(true)` on the bound player already
      * routes the broadcast through Media3's own pause logic. The
-     * handler just emits the typed [PlaybackError] so JS consumers
-     * can render UX (e.g. "Paused — headphones disconnected").
+     * handler must not report this expected pause as a playback error.
      */
     fun onBecomingNoisy()
   }
