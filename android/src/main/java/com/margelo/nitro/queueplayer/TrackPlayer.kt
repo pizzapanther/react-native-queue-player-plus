@@ -1655,6 +1655,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     if (newTracks.isNotEmpty()) {
       this.currentTrackIndex = resolvedStart
     }
+    pauseForVideoTrack()
     serviceBinder?.engine?.setMediaItems(
       items,
       startIndex = resolvedStart,
@@ -2477,6 +2478,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     val nativeItemUnchanged = p.currentMediaItemIndex == target
     val selectionChanged = currentTrackIndex != target
     currentTrackIndex = target
+    pauseForVideoTrack()
     // Seating a position is an attempt at it, so the report against it no
     // longer describes what is about to play. Cleared here rather than left to
     // the media-item transition, which does not fire for a skip that seats the
@@ -2513,6 +2515,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     val p = player ?: return
     val next = computeNextIndex() ?: return
     currentTrackIndex = next
+    pauseForVideoTrack()
     reportedFailureIndices.remove(next)
     pendingTrackChangeReason = TrackChangeReason.USER_SKIP_NEXT
     if (next < p.mediaItemCount) {
@@ -2552,6 +2555,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
       is QueueSkipArithmetic.SkipToPreviousAction.Previous -> {
         val prev = action.index
         currentTrackIndex = prev
+        pauseForVideoTrack()
         reportedFailureIndices.remove(prev)
         pendingTrackChangeReason = TrackChangeReason.USER_SKIP_PREVIOUS
         if (prev < p.mediaItemCount) {

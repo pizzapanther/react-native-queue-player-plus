@@ -131,6 +131,19 @@ class MediaItemBuilderTest {
   // --- buildMediaItems
 
   @Test
+  fun `video queue entries never expose their URL to the audio source factory`() {
+    val video = makeTrack(id = "video", url = "https://example.com/never-fetch.mp4").copy(isVideo = true)
+    val items = MediaItemBuilder.buildMediaItems(context, listOf(video))
+    assertEquals(1, items.size)
+    assertEquals(Uri.EMPTY, items.single().localConfiguration!!.uri)
+    assertTrue(MediaItemBuilder.isVideoSlot(items.single()))
+    val source = MediaItemBuilder.buildMediaSourceFactoryRaw(context, null, null)
+      .createMediaSource(items.single())
+    assertTrue(source is androidx.media3.exoplayer.source.SilenceMediaSource)
+    assertEquals(items.single(), source.mediaItem)
+  }
+
+  @Test
   fun `buildMediaItems returns empty list for empty input`() {
     val result = MediaItemBuilder.buildMediaItems(context, emptyList())
     assertTrue(result.isEmpty())

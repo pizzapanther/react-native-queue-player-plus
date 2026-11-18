@@ -704,18 +704,29 @@ extension TrackPlayer {
       return
     }
     let cur = self.currentTrackIndex
+    if self.tracks[cur].isVideo == true {
+      self.wantsToPlay = false
+      engine.pause()
+      engine.removeAllItems()
+      let reason = self.pendingTrackChangeReason ?? .autoAdvance
+      self.pendingTrackChangeReason = nil
+      self.dispatchTrackChange(reason: reason)
+      return
+    }
     // `wraps: false` deliberately. Carrying the head into the run at the tail
     // would let a repeat-queue boundary crossfade instead of cutting, but it
     // also moves the wrap off the drain path: the engine advances into the
     // wrap target itself instead of reporting that it ran out, and
     // `applyEndVerdict` never decides the wrap. The run stays forward-only;
     // `slice` carries the arithmetic for a wrapping run.
+    let previousVideo = self.tracks.indices.last { $0 < cur && self.tracks[$0].isVideo == true } ?? -1
+    let nextVideo = self.tracks.indices.first { $0 > cur && self.tracks[$0].isVideo == true } ?? self.tracks.count
     let positions = QueueWindowArithmetic.slice(
       currentIndex: cur,
       trackCount: self.tracks.count,
       trail: self.engineTrail,
       wraps: false
-    )
+    ).filter { $0 > previousVideo && $0 < nextVideo }
     guard !positions.isEmpty else {
       engine.removeAllItems()
       return

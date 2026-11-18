@@ -21,6 +21,17 @@ import AVFoundation
 @MainActor
 final class AVQueueBuilderTests: XCTestCase {
 
+  func testVideoDoesNotCreateAnAssetAndStopsTheInstalledAudioRun() {
+    let audio = PlayerFixtures.track(id: "audio", url: "https://example.com/audio.mp3")
+    let video = PlayerFixtures.track(id: "video", url: "https://example.com/never-fetch.mp4", isVideo: true)
+    XCTAssertNil(AVQueueBuilder.makeItem(for: video, queueItemId: "video", config: PlayerFixtures.config()))
+    let items = AVQueueBuilder.buildPlayerItems(
+      tracks: [audio, video, audio], queueItemIds: ["before", "video", "after"],
+      config: PlayerFixtures.config())
+    XCTAssertEqual(items.count, 1)
+    XCTAssertEqual(items.first?.queueItemId, "before")
+  }
+
   // MARK: - httpOptionsRaw merging
 
   func testHttpOptionsWithNoHeadersOrUAReturnsEmpty() {

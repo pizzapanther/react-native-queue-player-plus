@@ -82,7 +82,8 @@ export interface TrackItem {
     replayGainAlbumGain?: number;
     /** Consumer-supplied `REPLAYGAIN_ALBUM_PEAK`, linear. */
     replayGainAlbumPeak?: number;
-    /** Video entries stop audio playback when selected, but still emit onTrackChange.
+    /** Event-only entry: never load or prefetch its URL in the audio player.
+     * Stops audio playback when selected, but still emits onTrackChange.
      * Defaults to false. The selected entry remains current for the app to handle.
      */
     isVideo?: boolean;

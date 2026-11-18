@@ -76,6 +76,8 @@ await player.play();
 ```
 
 Set `isVideo: true` on a track to pause audio when that entry becomes current.
+Video entries are event-only: their URLs are never loaded by the audio engine
+or prefetched, and they are excluded from crossfade preroll.
 `onTrackChange` still reports the video track and its queue index, so your app
 can open its video player. The entry stays selected, and audio play requests
 remain paused until you select an audio track. Omit `isVideo` or set it to

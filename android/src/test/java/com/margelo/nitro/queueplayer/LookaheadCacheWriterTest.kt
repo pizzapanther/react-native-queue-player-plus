@@ -44,6 +44,14 @@ class LookaheadCacheWriterTest {
 
   // --- computeTargets
 
+  @Test
+  fun `video URLs are excluded from prefetch`() {
+    val audio = httpTrack("audio")
+    val video = httpTrack("video").copy(isVideo = true)
+    assertEquals(listOf(audio), newWriter().computeTargets(listOf(video, audio), -1, 3))
+    assertEquals(null, newWriter().lookbackTarget(listOf(video, audio), 1))
+  }
+
   private fun newWriter(): LookaheadCacheWriter =
     LookaheadCacheWriter(
       downloader = { /* unused for computeTargets exercises */ },

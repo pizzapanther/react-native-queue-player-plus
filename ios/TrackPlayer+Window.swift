@@ -82,6 +82,8 @@ extension TrackPlayer {
   /// leaves `currentTrackIndex` on the track that just finished — the furthest
   /// position the queue actually reached.
   internal func applyEndVerdict() {
+    // Video entries are intentional unloaded stops, not drained audio windows.
+    guard self.tracks[safe: self.currentTrackIndex]?.isVideo != true else { return }
     // `verdict` is specified against a queue that has something to end.
     guard !self.tracks.isEmpty else { return }
     // A queue that has ended stays ended: a further drain report — a rate
@@ -171,6 +173,7 @@ extension TrackPlayer {
         self.lastEmittedQueueItemId = nil
         self.performingMutation { self.fullRebuildPlayerQueue() }
         self.rescheduleLookahead()
+        if self.tracks[self.currentTrackIndex].isVideo == true { return }
         // A position whose item cannot be built is absent from the installed
         // run, and no engine signal follows to re-enter on. Asking whether the
         // run holds *this* position rather than whether the engine holds

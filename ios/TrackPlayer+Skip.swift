@@ -272,6 +272,15 @@ extension TrackPlayer {
     newIndex: Int, reason: TrackChangeReason
   ) {
     guard newIndex >= 0, newIndex < self.tracks.count else { return }
+    if self.tracks[newIndex].isVideo == true {
+      self.currentTrackIndex = newIndex
+      self.pendingTrackChangeReason = reason
+      self.reachedQueueEnd = false
+      self.performingMutation { self.fullRebuildPlayerQueue() }
+      self.recomputeCapabilities()
+      self.rescheduleLookahead()
+      return
+    }
     // Revived before the skip; any reinstall it leaves owed runs after, on
     // every exit, once the skip has moved the index and cleared
     // `reachedQueueEnd`. A skip that installed a fresh run has already settled it.

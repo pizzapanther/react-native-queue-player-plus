@@ -1287,6 +1287,8 @@ internal class CrossfadeEngine(
     val currentIdx = leadingPlayer.currentMediaItemIndex
     val itemCount = leadingPlayer.mediaItemCount
     if (currentIdx < 0 || currentIdx >= itemCount - 1) return  // last track or empty
+    // Video entries are event-only boundaries, never standby preroll targets.
+    if (MediaItemBuilder.isVideoSlot(leadingPlayer.getMediaItemAt(currentIdx + 1))) return
     val duration = leadingPlayer.duration
     if (duration == C.TIME_UNSET || duration <= 0L) return
     val position = leadingPlayer.currentPosition

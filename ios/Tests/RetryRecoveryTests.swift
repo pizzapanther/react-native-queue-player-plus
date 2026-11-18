@@ -23,7 +23,13 @@ final class RetryRecoveryTests: XCTestCase {
       XCTAssertFalse(player.wantsToPlay)
       XCTAssertGreaterThan(engine.pauseCount, 0)
     }
-    player.dispatchTrackChange(reason: .userSkipToIndex)
+    player.pendingTrackChangeReason = .userSkipToIndex
+    player.performingMutation { player.fullRebuildPlayerQueue() }
+    XCTAssertEqual(calls, 1)
+    XCTAssertTrue(engine.allMediaItems.isEmpty)
+    // An intentionally unloaded video is not an audio drain to skip past.
+    player.applyEndVerdict()
+    XCTAssertEqual(player.currentTrackIndex, 0)
     XCTAssertEqual(calls, 1)
     player.beginPlayback()
     XCTAssertEqual(engine.playCount, 0)

@@ -51,7 +51,7 @@ public enum AVQueueBuilder {
       tracks.count == queueItemIds.count,
       "AVQueueBuilder.buildPlayerItems requires queueItemIds parallel to tracks (1:1)"
     )
-    return zip(tracks, queueItemIds).compactMap { track, id in
+    return zip(tracks, queueItemIds).prefix { $0.0.isVideo != true }.compactMap { track, id in
       makeItem(for: track, queueItemId: id, config: config, server: server)
     }
   }
@@ -109,6 +109,7 @@ public enum AVQueueBuilder {
     config: PlayerConfig,
     server: ReadThroughServer? = nil
   ) -> AVPlayerItem? {
+    guard track.isVideo != true else { return nil }
     // Remote tracks bind the read-through server's URL, which is stable for
     // the session and never re-pointed. Whether the bytes come from the cache
     // or the origin is the server's decision, made per request — the only

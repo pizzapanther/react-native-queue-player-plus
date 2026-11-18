@@ -11,6 +11,7 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.SilenceMediaSource
 import androidx.media3.extractor.DefaultExtractorsFactory
 
 /**
@@ -35,6 +36,9 @@ import androidx.media3.extractor.DefaultExtractorsFactory
  */
 @UnstableApi
 object MediaItemBuilder {
+  private val videoSlot = Any()
+
+  internal fun isVideoSlot(item: MediaItem): Boolean = item.localConfiguration?.tag === videoSlot
 
   /**
    * Build the [MediaItem] list for the player's queue, attaching a
@@ -68,9 +72,12 @@ object MediaItemBuilder {
         // is the authoritative queue position. Empty string is
         // Media3's documented default when track.id is omitted.
         .setMediaId(track.id ?: "")
-        .setUri(Uri.parse(track.url))
+        // Keep queue indices stable without giving the audio pipeline the
+        // video's URL. The factory supplies a local, non-network queue slot.
+        .setUri(if (track.isVideo == true) Uri.EMPTY else Uri.parse(track.url))
+        .setTag(if (track.isVideo == true) videoSlot else null)
         .setMediaMetadata(buildMetadata(context, track, customPlaceholderUri))
-      val mime = resolveMimeTypeForBuild(track.url, lookaheadCache)
+      val mime = if (track.isVideo == true) null else resolveMimeTypeForBuild(track.url, lookaheadCache)
       if (mime != null) builder.setMimeType(mime)
       builder.build()
     }
@@ -247,8 +254,15 @@ object MediaItemBuilder {
     // them as unseekable and a seekTo silently collapses to the track start.
     // Positions are bitrate-approximated (accurate enough for scrubbing).
     val extractorsFactory = DefaultExtractorsFactory().setConstantBitrateSeekingEnabled(true)
-    return DefaultMediaSourceFactory(context, extractorsFactory)
+    val audioFactory = DefaultMediaSourceFactory(context, extractorsFactory)
       .setDataSourceFactory(dataSourceFactory)
+    return object : MediaSource.Factory by audioFactory {
+      override fun createMediaSource(mediaItem: MediaItem): MediaSource =
+        if (isVideoSlot(mediaItem)) {
+          SilenceMediaSource.Factory().setDurationUs(86_400_000_000L)
+            .createMediaSource().apply { updateMediaItem(mediaItem) }
+        } else audioFactory.createMediaSource(mediaItem)
+    }
   }
 
   /**

@@ -270,6 +270,7 @@ class LookaheadCacheWriter @VisibleForTesting internal constructor(
     currentIndex: Int
   ): TrackItem? {
     val head = tracks.firstOrNull() ?: return null
+    if (head.isVideo == true) return null
     if (!isRemote(head.url)) return null
     if (currentIndex in tracks.indices && tracks[currentIndex].url == head.url) {
       return null
@@ -344,7 +345,7 @@ class LookaheadCacheWriter @VisibleForTesting internal constructor(
     // from a JS Double, so Int.MAX_VALUE is one `Infinity` away.
     val remaining = tracks.size - start
     val end = start + lookaheadCount.coerceAtMost(remaining)
-    return tracks.subList(start, end).filter { isRemote(it.url) }
+    return tracks.subList(start, end).filter { it.isVideo != true && isRemote(it.url) }
   }
 
   /**

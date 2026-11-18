@@ -281,6 +281,7 @@ public final class LookaheadCachePrefetcher {
     currentIndex: Int
   ) -> TrackItem? {
     guard let head = tracks.first else { return nil }
+    guard head.isVideo != true else { return nil }
     if !Self.isRemote(head.url) { return nil }
     if currentIndex >= 0 && currentIndex < tracks.count {
       if tracks[currentIndex].url == head.url { return nil }
@@ -305,7 +306,7 @@ public final class LookaheadCachePrefetcher {
     let start = max(0, currentIndex + 1)
     if start >= tracks.count { return [] }
     let end = min(start + lookaheadCount, tracks.count)
-    return tracks[start..<end].filter { Self.isRemote($0.url) }
+    return tracks[start..<end].filter { $0.isVideo != true && Self.isRemote($0.url) }
   }
 
   /// Test introspection — whether the orchestrator or an in-flight
