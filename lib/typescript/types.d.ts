@@ -82,6 +82,10 @@ export interface TrackItem {
     replayGainAlbumGain?: number;
     /** Consumer-supplied `REPLAYGAIN_ALBUM_PEAK`, linear. */
     replayGainAlbumPeak?: number;
+    /** Video entries stop audio playback when selected, but still emit onTrackChange.
+     * Defaults to false. The selected entry remains current for the app to handle.
+     */
+    isVideo?: boolean;
 }
 /**
  * Result returned by `shuffleQueue()`. The consumer app uses this

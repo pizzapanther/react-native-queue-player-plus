@@ -22,12 +22,12 @@ enum PlayerFixtures {
     )
   }
 
-  static func track(id: String, url: String) -> TrackItem {
+  static func track(id: String, url: String, isVideo: Bool? = nil) -> TrackItem {
     return TrackItem(
       id: id, url: url, title: nil, artist: nil, album: nil,
       duration: nil, artworkUrl: nil, extras: nil,
       replayGainTrackGain: nil, replayGainTrackPeak: nil,
-      replayGainAlbumGain: nil, replayGainAlbumPeak: nil
+      replayGainAlbumGain: nil, replayGainAlbumPeak: nil, isVideo: isVideo
     )
   }
 

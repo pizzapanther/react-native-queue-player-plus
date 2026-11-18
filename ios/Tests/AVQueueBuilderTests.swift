@@ -351,7 +351,7 @@ final class AVQueueBuilderTests: XCTestCase {
       title: nil, artist: nil, album: nil,
       duration: nil, artworkUrl: nil, extras: nil,
       replayGainTrackGain: nil, replayGainTrackPeak: nil,
-      replayGainAlbumGain: nil, replayGainAlbumPeak: nil
+      replayGainAlbumGain: nil, replayGainAlbumPeak: nil, isVideo: nil
     )
     let queueItemId = UUID().uuidString
     let item = AVQueueBuilder.makeItem(
@@ -386,7 +386,7 @@ final class AVQueueBuilderTests: XCTestCase {
       id: id, url: url, title: nil, artist: nil, album: nil,
       duration: nil, artworkUrl: nil, extras: nil,
       replayGainTrackGain: nil, replayGainTrackPeak: nil,
-      replayGainAlbumGain: nil, replayGainAlbumPeak: nil
+      replayGainAlbumGain: nil, replayGainAlbumPeak: nil, isVideo: nil
     )
   }
 

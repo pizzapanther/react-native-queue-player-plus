@@ -1366,6 +1366,8 @@ final class CrossfadeEngine: PlaybackEngine {
     // is already set above; the delegate sees consistent state
     // across the callback.
     delegate?.engineCrossfadeDidBegin(self)
+    // The delegate may have paused at a video entry and settled this fade.
+    guard fadeInFlight else { return }
 
     // Post-fade swap scheduled in wall-clock — the asset-time-keyed
     // ramps complete in this many seconds regardless of pause
@@ -1431,6 +1433,13 @@ final class CrossfadeEngine: PlaybackEngine {
     // the run the transition is about to be told to extend.
     delegate?.engineFadeDidSettle(self)
     delegate?.engineDidTransitionTrack(self)
+  }
+
+  /// Pause at the incoming video without the ordinary fade-cancel revert.
+  internal func pausePreservingActiveTrack() {
+    fadeCompletionTask?.cancel()
+    completeCrossfade()
+    pause()
   }
 
   private func cancelFadeInternal(emitRevert: Bool = true) {

@@ -22,8 +22,21 @@ extension TrackPlayer {
   /// whatever else the user is listening to the moment a consumer app
   /// launches, before they have pressed anything.
   internal func beginPlayback() {
+    if pauseForVideoTrack() { return }
     audioSession.activateIfNeeded()
     engine?.play()
+  }
+
+  internal func pauseForVideoTrack() -> Bool {
+    guard tracks[safe: currentTrackIndex]?.isVideo == true else { return false }
+    wantsToPlay = false
+    if let crossfade = engine as? CrossfadeEngine {
+      crossfade.pausePreservingActiveTrack()
+    } else {
+      engine?.pause()
+    }
+    _ = CastTransportRouter.routePause()
+    return true
   }
 
   /// Enqueue `body` on `playerQueue` **at call time**, on the calling thread,

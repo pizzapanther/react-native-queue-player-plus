@@ -755,6 +755,6 @@ class LookaheadCacheWriterTest {
       artworkUrl = null,
       extras = null,
       replayGainTrackGain = null, replayGainTrackPeak = null,
-      replayGainAlbumGain = null, replayGainAlbumPeak = null
+      replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
     )
 }

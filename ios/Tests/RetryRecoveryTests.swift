@@ -6,6 +6,30 @@ import XCTest
 /// reached, on whichever engine is active.
 final class RetryRecoveryTests: XCTestCase {
 
+  func testVideoSelectionPausesAndStillAnnouncesTheTrack() throws {
+    let player = TrackPlayer()
+    let engine = RetryEngineStub()
+    player.engine = engine
+    _ = player.queueState.replaceAll([
+      PlayerFixtures.track(id: "video", url: "https://example.com/video.mp4", isVideo: true)
+    ])
+    player.currentTrackIndex = 0
+    player.wantsToPlay = true
+    var calls = 0
+    let unsubscribe = try player.onTrackChange { track, index, _, _ in
+      calls += 1
+      XCTAssertEqual(track?.isVideo, true)
+      XCTAssertEqual(index, 0)
+      XCTAssertFalse(player.wantsToPlay)
+      XCTAssertGreaterThan(engine.pauseCount, 0)
+    }
+    player.dispatchTrackChange(reason: .userSkipToIndex)
+    XCTAssertEqual(calls, 1)
+    player.beginPlayback()
+    XCTAssertEqual(engine.playCount, 0)
+    unsubscribe()
+  }
+
   /// One automatic attempt by default. A transient failure that survives a
   /// rebuild is rarely cured by a second, and further attempts only delay the
   /// error the consumer needs to act on; `retry()` is the escape hatch after it.
@@ -505,7 +529,7 @@ final class RetryRecoveryTests: XCTestCase {
         id: "t\($0)", url: "https://example.com/\($0).m4a", title: nil, artist: nil,
         album: nil, duration: nil, artworkUrl: nil, extras: nil,
         replayGainTrackGain: nil, replayGainTrackPeak: nil,
-        replayGainAlbumGain: nil, replayGainAlbumPeak: nil)
+        replayGainAlbumGain: nil, replayGainAlbumPeak: nil, isVideo: nil)
     })
     player.currentTrackIndex = 0
     player.engine = engine
@@ -514,6 +538,8 @@ final class RetryRecoveryTests: XCTestCase {
 
 /// Records the seeks the retry issues; everything else is inert.
 private final class RetryEngineStub: PlaybackEngine {
+  var pauseCount = 0
+  var playCount = 0
   var position: TimeInterval = 0
   private(set) var seeks: [(index: Int, position: TimeInterval)] = []
 
@@ -540,8 +566,8 @@ private final class RetryEngineStub: PlaybackEngine {
   }
   func removeAllItems() {}
   func canInsert(_ item: AVPlayerItem, after: AVPlayerItem?) -> Bool { true }
-  func play() {}
-  func pause() {}
+  func play() { playCount += 1 }
+  func pause() { pauseCount += 1 }
   func stop() {}
   func skipToNext() {}
   func skipToPrevious() {}

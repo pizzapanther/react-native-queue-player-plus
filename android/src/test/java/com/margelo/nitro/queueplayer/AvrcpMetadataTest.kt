@@ -81,7 +81,7 @@ class AvrcpMetadataTest {
       artworkUrl = null,
       extras = null,
       replayGainTrackGain = null, replayGainTrackPeak = null,
-      replayGainAlbumGain = null, replayGainAlbumPeak = null,
+      replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
     )
     setQueueOnSession(listOf(track))
 
@@ -103,7 +103,7 @@ class AvrcpMetadataTest {
       artworkUrl = "https://example.com/cover.jpg",
       extras = null,
       replayGainTrackGain = null, replayGainTrackPeak = null,
-      replayGainAlbumGain = null, replayGainAlbumPeak = null,
+      replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
     )
     setQueueOnSession(listOf(track))
 
@@ -125,7 +125,7 @@ class AvrcpMetadataTest {
       artworkUrl = null,
       extras = null,
       replayGainTrackGain = null, replayGainTrackPeak = null,
-      replayGainAlbumGain = null, replayGainAlbumPeak = null,
+      replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
     )
     setQueueOnSession(listOf(track))
 
@@ -144,7 +144,7 @@ class AvrcpMetadataTest {
       artworkUrl = null,
       extras = null,
       replayGainTrackGain = null, replayGainTrackPeak = null,
-      replayGainAlbumGain = null, replayGainAlbumPeak = null,
+      replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
     )
     val second = TrackItem(
       id = "second",
@@ -156,7 +156,7 @@ class AvrcpMetadataTest {
       artworkUrl = null,
       extras = null,
       replayGainTrackGain = null, replayGainTrackPeak = null,
-      replayGainAlbumGain = null, replayGainAlbumPeak = null,
+      replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
     )
 
     setQueueOnSession(listOf(first))
@@ -181,7 +181,7 @@ class AvrcpMetadataTest {
       artworkUrl = null,
       extras = null,
       replayGainTrackGain = null, replayGainTrackPeak = null,
-      replayGainAlbumGain = null, replayGainAlbumPeak = null,
+      replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
     )
     setQueueOnSession(listOf(track))
     assertEquals(1, session.player.mediaItemCount)

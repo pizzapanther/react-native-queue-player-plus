@@ -258,7 +258,7 @@ final class SkipCapabilityTests: XCTestCase {
       id: "t\(index)", url: "https://example.com/\(index).m4a",
       title: title, artist: artist, album: album, duration: nil, artworkUrl: nil,
       extras: nil, replayGainTrackGain: nil, replayGainTrackPeak: nil,
-      replayGainAlbumGain: nil, replayGainAlbumPeak: nil
+      replayGainAlbumGain: nil, replayGainAlbumPeak: nil, isVideo: nil
     )
   }
 
@@ -306,7 +306,7 @@ final class SkipCapabilityTests: XCTestCase {
         id: "local", url: "file:///tmp/local.m4a",
         title: nil, artist: nil, album: nil, duration: nil, artworkUrl: nil,
         extras: nil, replayGainTrackGain: nil, replayGainTrackPeak: nil,
-        replayGainAlbumGain: nil, replayGainAlbumPeak: nil),
+        replayGainAlbumGain: nil, replayGainAlbumPeak: nil, isVideo: nil),
     ])
     player.currentTrackIndex = 0
     player.playerQueue.async { player.reclassifyCurrentTrackSource() }

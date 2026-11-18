@@ -73,7 +73,7 @@ internal struct QueueState {
       id: old.id, url: old.url, title: title, artist: artist, album: album,
       duration: old.duration, artworkUrl: artwork, extras: old.extras,
       replayGainTrackGain: old.replayGainTrackGain, replayGainTrackPeak: old.replayGainTrackPeak,
-      replayGainAlbumGain: old.replayGainAlbumGain, replayGainAlbumPeak: old.replayGainAlbumPeak)
+      replayGainAlbumGain: old.replayGainAlbumGain, replayGainAlbumPeak: old.replayGainAlbumPeak, isVideo: old.isVideo)
     tracks[index] = updated
     return updated
   }

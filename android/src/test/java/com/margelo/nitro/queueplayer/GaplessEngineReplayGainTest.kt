@@ -113,7 +113,7 @@ class GaplessEngineReplayGainTest {
     id = null, url = "https://example.com/a.mp3", title = null, artist = null, album = null,
     duration = null, artworkUrl = null, extras = null,
     replayGainTrackGain = trackGain, replayGainTrackPeak = null,
-    replayGainAlbumGain = null, replayGainAlbumPeak = null)
+    replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null)
 
   @Test
   fun `handleReplayGainParse with album-only data is inactive in track mode`() {

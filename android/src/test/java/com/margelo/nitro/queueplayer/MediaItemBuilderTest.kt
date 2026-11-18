@@ -476,6 +476,6 @@ class MediaItemBuilderTest {
       artworkUrl = artworkUrl,
       extras = null,
       replayGainTrackGain = null, replayGainTrackPeak = null,
-      replayGainAlbumGain = null, replayGainAlbumPeak = null
+      replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
     )
 }

@@ -53,10 +53,11 @@ namespace margelo::nitro::queueplayer {
     std::optional<double> replayGainTrackPeak     SWIFT_PRIVATE;
     std::optional<double> replayGainAlbumGain     SWIFT_PRIVATE;
     std::optional<double> replayGainAlbumPeak     SWIFT_PRIVATE;
+    std::optional<bool> isVideo     SWIFT_PRIVATE;
 
   public:
     TrackItem() = default;
-    explicit TrackItem(std::optional<std::string> id, std::string url, std::optional<std::string> title, std::optional<std::string> artist, std::optional<std::string> album, std::optional<double> duration, std::optional<std::string> artworkUrl, std::optional<std::unordered_map<std::string, std::string>> extras, std::optional<double> replayGainTrackGain, std::optional<double> replayGainTrackPeak, std::optional<double> replayGainAlbumGain, std::optional<double> replayGainAlbumPeak): id(id), url(url), title(title), artist(artist), album(album), duration(duration), artworkUrl(artworkUrl), extras(extras), replayGainTrackGain(replayGainTrackGain), replayGainTrackPeak(replayGainTrackPeak), replayGainAlbumGain(replayGainAlbumGain), replayGainAlbumPeak(replayGainAlbumPeak) {}
+    explicit TrackItem(std::optional<std::string> id, std::string url, std::optional<std::string> title, std::optional<std::string> artist, std::optional<std::string> album, std::optional<double> duration, std::optional<std::string> artworkUrl, std::optional<std::unordered_map<std::string, std::string>> extras, std::optional<double> replayGainTrackGain, std::optional<double> replayGainTrackPeak, std::optional<double> replayGainAlbumGain, std::optional<double> replayGainAlbumPeak, std::optional<bool> isVideo): id(id), url(url), title(title), artist(artist), album(album), duration(duration), artworkUrl(artworkUrl), extras(extras), replayGainTrackGain(replayGainTrackGain), replayGainTrackPeak(replayGainTrackPeak), replayGainAlbumGain(replayGainAlbumGain), replayGainAlbumPeak(replayGainAlbumPeak), isVideo(isVideo) {}
 
   public:
     friend bool operator==(const TrackItem& lhs, const TrackItem& rhs) = default;
@@ -83,7 +84,8 @@ namespace margelo::nitro {
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "replayGainTrackGain"))),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "replayGainTrackPeak"))),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "replayGainAlbumGain"))),
-        JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "replayGainAlbumPeak")))
+        JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "replayGainAlbumPeak"))),
+        JSIConverter<std::optional<bool>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "isVideo")))
       );
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::queueplayer::TrackItem& arg) {
@@ -100,6 +102,7 @@ namespace margelo::nitro {
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "replayGainTrackPeak"), JSIConverter<std::optional<double>>::toJSI(runtime, arg.replayGainTrackPeak));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "replayGainAlbumGain"), JSIConverter<std::optional<double>>::toJSI(runtime, arg.replayGainAlbumGain));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "replayGainAlbumPeak"), JSIConverter<std::optional<double>>::toJSI(runtime, arg.replayGainAlbumPeak));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "isVideo"), JSIConverter<std::optional<bool>>::toJSI(runtime, arg.isVideo));
       return obj;
     }
     static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -122,6 +125,7 @@ namespace margelo::nitro {
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "replayGainTrackPeak")))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "replayGainAlbumGain")))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "replayGainAlbumPeak")))) return false;
+      if (!JSIConverter<std::optional<bool>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "isVideo")))) return false;
       return true;
     }
   };

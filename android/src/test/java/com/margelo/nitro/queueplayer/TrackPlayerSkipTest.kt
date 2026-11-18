@@ -42,7 +42,7 @@ class TrackPlayerSkipTest {
     title = null, artist = null, album = null,
     duration = null, artworkUrl = null, extras = null,
     replayGainTrackGain = null, replayGainTrackPeak = null,
-    replayGainAlbumGain = null, replayGainAlbumPeak = null
+    replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
   )
 
   private lateinit var serviceHandle: PlaybackServiceTestHandle

@@ -42,7 +42,7 @@ class TrackPlayerSkipCapabilityTest {
     title = null, artist = null, album = null,
     duration = null, artworkUrl = null, extras = null,
     replayGainTrackGain = null, replayGainTrackPeak = null,
-    replayGainAlbumGain = null, replayGainAlbumPeak = null
+    replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
   )
 
   /** Drain main-looper posts so the auto-fire-on-subscribe lands. */
@@ -418,7 +418,7 @@ class TrackPlayerSkipCapabilityTest {
       title = null, artist = null, album = null,
       duration = null, artworkUrl = null, extras = null,
       replayGainTrackGain = null, replayGainTrackPeak = null,
-      replayGainAlbumGain = null, replayGainAlbumPeak = null
+      replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
     )
     player.setQueueInternal(listOf(track("t1"), track("t2"), local))
     assertEquals(TrackSource.STREAMING, player.getCurrentTrackSource())
@@ -434,7 +434,7 @@ class TrackPlayerSkipCapabilityTest {
       title = null, artist = null, album = null,
       duration = null, artworkUrl = null, extras = null,
       replayGainTrackGain = null, replayGainTrackPeak = null,
-      replayGainAlbumGain = null, replayGainAlbumPeak = null
+      replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
     )
     player.setQueueInternal(listOf(track("t1"), track("t2"), local))
     assertEquals(true, player.getCanSkipNext())

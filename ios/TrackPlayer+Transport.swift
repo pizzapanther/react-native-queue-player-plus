@@ -6,6 +6,7 @@ extension TrackPlayer {
 
   func play() throws -> Promise<Void> {
     return enqueue {
+      if self.pauseForVideoTrack() { return }
       if CastTransportRouter.routePlay() { return }
       // Before the stuck-recovery block, which rebuilds on whatever listener is
       // live; a play from the lock screen or CarPlay arrives without the app

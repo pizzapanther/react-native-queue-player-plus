@@ -80,7 +80,7 @@ class TrackPlayerTransportTest {
     // currentTrackIndex while the ExoPlayer is still IDLE.
     // iOS parity: paused-with-queue returns PAUSED, not NONE.
     player.tracks = listOf(
-      TrackItem("t1", "https://example.com/1.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t1", "https://example.com/1.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null)
     )
     player.currentTrackIndex = 0
 
@@ -104,7 +104,7 @@ class TrackPlayerTransportTest {
     // on eventually-seekable content still lands. The reset-to-start protection
     // applies once the item is loaded (STATE_READY) and confirmed unseekable.
     player.setQueueInternal(
-      (1..3).map { TrackItem("t$it", "https://example.com/$it.m4a", null, null, null, null, null, null, null, null, null, null) }
+      (1..3).map { TrackItem("t$it", "https://example.com/$it.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null) }
     )
     player.currentTrackIndex = 0
 

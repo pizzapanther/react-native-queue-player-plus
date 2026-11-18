@@ -70,7 +70,7 @@ final class NowPlayingSnapshotTests: XCTestCase {
       id: "same", url: "https://example.com/0.m4a", title: "Song", artist: nil,
       album: nil, duration: nil, artworkUrl: nil, extras: nil,
       replayGainTrackGain: nil, replayGainTrackPeak: nil,
-      replayGainAlbumGain: nil, replayGainAlbumPeak: nil)
+      replayGainAlbumGain: nil, replayGainAlbumPeak: nil, isVideo: nil)
     let ids = player.queueState.replaceAll([track, track])
     player.currentTrackIndex = 1
     player.engine = SnapshotEngineStub()
@@ -84,7 +84,7 @@ final class NowPlayingSnapshotTests: XCTestCase {
         id: "t0", url: "https://example.com/0.m4a", title: "Song", artist: nil,
         album: nil, duration: nil, artworkUrl: nil, extras: nil,
         replayGainTrackGain: nil, replayGainTrackPeak: nil,
-        replayGainAlbumGain: nil, replayGainAlbumPeak: nil)
+        replayGainAlbumGain: nil, replayGainAlbumPeak: nil, isVideo: nil)
     ])
     player.currentTrackIndex = 0
   }

@@ -57,5 +57,5 @@ class SuppliedReplayGainTest {
     id = null, url = "https://example.com/a.mp3", title = null, artist = null, album = null,
     duration = null, artworkUrl = null, extras = null,
     replayGainTrackGain = trackGain, replayGainTrackPeak = trackPeak,
-    replayGainAlbumGain = albumGain, replayGainAlbumPeak = albumPeak)
+    replayGainAlbumGain = albumGain, replayGainAlbumPeak = albumPeak, isVideo = null)
 }

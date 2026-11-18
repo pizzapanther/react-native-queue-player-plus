@@ -57,6 +57,8 @@ namespace margelo::nitro::queueplayer {
       jni::local_ref<jni::JDouble> replayGainAlbumGain = this->getFieldValue(fieldReplayGainAlbumGain);
       static const auto fieldReplayGainAlbumPeak = clazz->getField<jni::JDouble>("replayGainAlbumPeak");
       jni::local_ref<jni::JDouble> replayGainAlbumPeak = this->getFieldValue(fieldReplayGainAlbumPeak);
+      static const auto fieldIsVideo = clazz->getField<jni::JBoolean>("isVideo");
+      jni::local_ref<jni::JBoolean> isVideo = this->getFieldValue(fieldIsVideo);
       return TrackItem(
         id != nullptr ? std::make_optional(id->toStdString()) : std::nullopt,
         url->toStdString(),
@@ -76,7 +78,8 @@ namespace margelo::nitro::queueplayer {
         replayGainTrackGain != nullptr ? std::make_optional(replayGainTrackGain->value()) : std::nullopt,
         replayGainTrackPeak != nullptr ? std::make_optional(replayGainTrackPeak->value()) : std::nullopt,
         replayGainAlbumGain != nullptr ? std::make_optional(replayGainAlbumGain->value()) : std::nullopt,
-        replayGainAlbumPeak != nullptr ? std::make_optional(replayGainAlbumPeak->value()) : std::nullopt
+        replayGainAlbumPeak != nullptr ? std::make_optional(replayGainAlbumPeak->value()) : std::nullopt,
+        isVideo != nullptr ? std::make_optional(static_cast<bool>(isVideo->value())) : std::nullopt
       );
     }
 
@@ -86,7 +89,7 @@ namespace margelo::nitro::queueplayer {
      */
     [[maybe_unused]]
     static jni::local_ref<JTrackItem::javaobject> fromCpp(const TrackItem& value) {
-      using JSignature = JTrackItem(jni::alias_ref<jni::JString>, jni::alias_ref<jni::JString>, jni::alias_ref<jni::JString>, jni::alias_ref<jni::JString>, jni::alias_ref<jni::JString>, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JString>, jni::alias_ref<jni::JMap<jni::JString, jni::JString>>, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JDouble>);
+      using JSignature = JTrackItem(jni::alias_ref<jni::JString>, jni::alias_ref<jni::JString>, jni::alias_ref<jni::JString>, jni::alias_ref<jni::JString>, jni::alias_ref<jni::JString>, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JString>, jni::alias_ref<jni::JMap<jni::JString, jni::JString>>, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JDouble>, jni::alias_ref<jni::JBoolean>);
       static const auto clazz = javaClassStatic();
       static const auto create = clazz->getStaticMethod<JSignature>("fromCpp");
       return create(
@@ -108,7 +111,8 @@ namespace margelo::nitro::queueplayer {
         value.replayGainTrackGain.has_value() ? jni::JDouble::valueOf(value.replayGainTrackGain.value()) : nullptr,
         value.replayGainTrackPeak.has_value() ? jni::JDouble::valueOf(value.replayGainTrackPeak.value()) : nullptr,
         value.replayGainAlbumGain.has_value() ? jni::JDouble::valueOf(value.replayGainAlbumGain.value()) : nullptr,
-        value.replayGainAlbumPeak.has_value() ? jni::JDouble::valueOf(value.replayGainAlbumPeak.value()) : nullptr
+        value.replayGainAlbumPeak.has_value() ? jni::JDouble::valueOf(value.replayGainAlbumPeak.value()) : nullptr,
+        value.isVideo.has_value() ? jni::JBoolean::valueOf(value.isVideo.value()) : nullptr
       );
     }
   };

@@ -312,7 +312,7 @@ final class NowPlayingInfoTests: XCTestCase {
       id: id, url: url, title: title, artist: artist, album: album,
       duration: duration, artworkUrl: artworkUrl, extras: nil,
       replayGainTrackGain: nil, replayGainTrackPeak: nil,
-      replayGainAlbumGain: nil, replayGainAlbumPeak: nil
+      replayGainAlbumGain: nil, replayGainAlbumPeak: nil, isVideo: nil
     )
   }
 

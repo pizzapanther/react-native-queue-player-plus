@@ -84,7 +84,7 @@ class TrackPlayerAudioFocusTest {
   fun `focus loss and output disconnect retain their state change reasons`() {
     player.setQueueInternal(listOf(TrackItem(
       "local", "file:///queue-player-test/focus.m4a", null, null, null, null,
-      null, null, null, null, null, null)))
+      null, null, null, null, null, null, isVideo = null)))
     serviceHandle.engine.stop() // Keep a selected item with an idle/paused engine.
     val states = mutableListOf<Pair<PlayerState, StateChangeReason>>()
     val dispose = player.onStateChange { state, reason -> states.add(state to reason) }

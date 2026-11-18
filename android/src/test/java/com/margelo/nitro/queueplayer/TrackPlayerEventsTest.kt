@@ -46,7 +46,7 @@ class TrackPlayerEventsTest {
     title = null, artist = null, album = null,
     duration = null, artworkUrl = null, extras = null,
     replayGainTrackGain = null, replayGainTrackPeak = null,
-    replayGainAlbumGain = null, replayGainAlbumPeak = null
+    replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null
   )
 
   private lateinit var serviceHandle: PlaybackServiceTestHandle
@@ -342,6 +342,65 @@ class TrackPlayerEventsTest {
   // --- handleMediaItemTransition state-sync policy
 
   @Test
+  fun `selecting a video pauses before emitting the selected track`() {
+    val video = track("video").copy(isVideo = true)
+    player.setQueueInternal(listOf(track("audio"), video))
+    player.player!!.playWhenReady = true
+    val events = mutableListOf<Pair<TrackItem?, Double>>()
+    player.onTrackChange { track, index, _, _ ->
+      assertFalse(player.player!!.playWhenReady)
+      events.add(track to index)
+    }
+    player.skipToIndexInternal(1)
+    assertEquals(listOf(video to 1.0), events)
+    assertEquals(1, player.currentTrackIndex)
+    player.mediaSessionCommandHandler.onMediaPlay()
+    assertFalse("A play request must keep the video paused", player.player!!.playWhenReady)
+    // Controller play can address the native player directly as well.
+    player.player!!.playWhenReady = true
+    assertFalse(player.player!!.playWhenReady)
+  }
+
+  @Test
+  fun `first added video emits at index zero and stays paused`() {
+    val video = track("video").copy(isVideo = true)
+    val events = mutableListOf<Pair<TrackItem?, Double>>()
+    player.onTrackChange { track, index, _, _ -> events.add(track to index) }
+    player.addToQueueInternal(listOf(video), null)
+    player.skipToIndexInternal(0)
+    assertEquals(listOf(video to 0.0), events)
+    assertFalse(player.player!!.playWhenReady)
+  }
+
+  @Test
+  fun `false and omitted video flags preserve audio playback on selection`() {
+    player.setQueueInternal(listOf(track("one"), track("two").copy(isVideo = false), track("three")))
+    player.player!!.playWhenReady = true
+    player.skipToIndexInternal(1)
+    assertTrue(player.player!!.playWhenReady)
+    player.skipToIndexInternal(2)
+    assertTrue(player.player!!.playWhenReady)
+  }
+
+  @Test
+  fun `auto advance to a video pauses and announces the incoming index`() {
+    val video = track("video").copy(isVideo = true)
+    player.setQueueInternal(listOf(track("audio"), video))
+    player.player!!.seekTo(1, 0L)
+    // The native player has advanced while the canonical index still names
+    // the outgoing audio, as it does on entry to the AUTO transition callback.
+    player.currentTrackIndex = 0
+    player.player!!.playWhenReady = true
+    val events = mutableListOf<Triple<TrackItem?, Double, TrackChangeReason>>()
+    player.onTrackChange { track, index, reason, _ ->
+      assertFalse(player.player!!.playWhenReady)
+      events.add(Triple(track, index, reason))
+    }
+    player.handleMediaItemTransition(Player.MEDIA_ITEM_TRANSITION_REASON_AUTO)
+    assertEquals(listOf(Triple(video, 1.0, TrackChangeReason.AUTO_ADVANCE)), events)
+  }
+
+  @Test
   fun `selecting the first added track emits its track and index exactly once`() {
     val added = track("added")
     val events = mutableListOf<Triple<TrackItem?, Double, TrackChangeReason>>()
@@ -385,8 +444,8 @@ class TrackPlayerEventsTest {
     //   - listener must NOT clobber the logical -1 from the Kotlin
     //     side with the ExoPlayer-derived 0
     player.tracks = listOf(
-      TrackItem("a", "file:///queue-player-test/a.m4a", null, null, null, null, null, null, null, null, null, null),
-      TrackItem("b", "file:///queue-player-test/b.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("a", "file:///queue-player-test/a.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
+      TrackItem("b", "file:///queue-player-test/b.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null)
     )
     player.currentTrackIndex = -1
 
@@ -416,7 +475,7 @@ class TrackPlayerEventsTest {
   @Test
   fun `handleMediaItemTransition REASON_SEEK consumes the pending track change reason`() {
     player.tracks = (1..5).map {
-      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null)
     }
     player.currentTrackIndex = 2
 
@@ -440,7 +499,7 @@ class TrackPlayerEventsTest {
   @Test
   fun `handleMediaItemTransition REASON_SEEK without stashed reason falls back to SEEK`() {
     player.tracks = (1..5).map {
-      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null)
     }
     player.currentTrackIndex = 2
 
@@ -456,11 +515,11 @@ class TrackPlayerEventsTest {
 
   @Test
   fun `handleMediaItemTransition fires callback with current track snapshot`() {
-    val t2 = TrackItem("t2", "file:///queue-player-test/t2.m4a", null, null, null, null, null, null, null, null, null, null)
+    val t2 = TrackItem("t2", "file:///queue-player-test/t2.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null)
     player.tracks = listOf(
-      TrackItem("t1", "file:///queue-player-test/t1.m4a", null, null, null, null, null, null, null, null, null, null),
+      TrackItem("t1", "file:///queue-player-test/t1.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
       t2,
-      TrackItem("t3", "file:///queue-player-test/t3.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t3", "file:///queue-player-test/t3.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null)
     )
     player.currentTrackIndex = 1
 
@@ -488,8 +547,8 @@ class TrackPlayerEventsTest {
   @Test
   fun `handleMediaItemTransition PLAYLIST_CHANGED reports null transitionGapMs`() {
     player.tracks = listOf(
-      TrackItem("t1", "file:///queue-player-test/t1.m4a", null, null, null, null, null, null, null, null, null, null),
-      TrackItem("t2", "file:///queue-player-test/t2.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t1", "file:///queue-player-test/t1.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
+      TrackItem("t2", "file:///queue-player-test/t2.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null)
     )
     player.currentTrackIndex = 0
 
@@ -511,7 +570,7 @@ class TrackPlayerEventsTest {
   @Test
   fun `handleMediaItemTransition SEEK reports null transitionGapMs`() {
     player.tracks = (1..3).map {
-      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null)
     }
     player.currentTrackIndex = 1
 
@@ -530,7 +589,7 @@ class TrackPlayerEventsTest {
   @Test
   fun `maybeEmitQueueEnd does nothing on non-ENDED states`() {
     player.tracks = listOf(
-      TrackItem("t1", "file:///queue-player-test/t1.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t1", "file:///queue-player-test/t1.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null)
     )
     var queueEndFires = 0
     player.onQueueEnd { queueEndFires += 1 }
@@ -560,7 +619,7 @@ class TrackPlayerEventsTest {
   @Test
   fun `maybeEmitQueueEnd fires queueEnd and ENDED state on STATE_ENDED with tracks`() {
     player.tracks = (1..3).map {
-      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
+      TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null)
     }
 
     var queueEndFires = 0
@@ -585,7 +644,7 @@ class TrackPlayerEventsTest {
   fun `emitStateIfChanged defaults pending reason to SYSTEM on terminal state`() {
     player.setQueueInternal(
       (1..1).map {
-        TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null)
+        TrackItem("t$it", "file:///queue-player-test/t$it.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null)
       }
     )
     // Manually reset dedup so the next call emits

@@ -278,8 +278,8 @@ class PlaybackServiceCallbackTest {
     val player = newConfiguredPlayer()
     try {
       player.tracks = listOf(
-        TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null),
-        TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null),
+        TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
+        TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
       )
       player.currentTrackIndex = 0
 
@@ -313,8 +313,8 @@ class PlaybackServiceCallbackTest {
 
       // Two-track queue at index 0 — skip-next now allowed.
       player.tracks = listOf(
-        TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null),
-        TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null),
+        TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
+        TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
       )
       player.currentTrackIndex = 0
       player.recomputeCapabilities()
@@ -339,8 +339,8 @@ class PlaybackServiceCallbackTest {
     val player = newConfiguredPlayer()
     try {
       player.tracks = listOf(
-        TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null),
-        TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null),
+        TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
+        TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
       )
       player.currentTrackIndex = 1
 
@@ -364,9 +364,9 @@ class PlaybackServiceCallbackTest {
     val player = newConfiguredPlayer()
     try {
       player.tracks = listOf(
-        TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null),
-        TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null),
-        TrackItem("c", "https://example.com/c.m4a", null, null, null, null, null, null, null, null, null, null),
+        TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
+        TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
+        TrackItem("c", "https://example.com/c.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
       )
       player.currentTrackIndex = 0
 
@@ -391,8 +391,8 @@ class PlaybackServiceCallbackTest {
     val player = newConfiguredPlayer()
     try {
       player.tracks = listOf(
-        TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null),
-        TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null),
+        TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
+        TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
       )
       player.currentTrackIndex = 1
 
@@ -413,8 +413,8 @@ class PlaybackServiceCallbackTest {
     val player = newConfiguredPlayer()
     try {
       player.tracks = listOf(
-        TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null),
-        TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null),
+        TrackItem("a", "https://example.com/a.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
+        TrackItem("b", "https://example.com/b.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
       )
       player.currentTrackIndex = 1
 

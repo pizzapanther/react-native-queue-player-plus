@@ -47,7 +47,7 @@ final class QueueStateTests: XCTestCase {
       id: "station", url: "https://example.com/live", title: "Old", artist: "Artist", album: "Album",
       duration: 42, artworkUrl: "https://example.com/art.jpg", extras: ["key": "value"],
       replayGainTrackGain: -3, replayGainTrackPeak: 0.9,
-      replayGainAlbumGain: -2, replayGainAlbumPeak: 0.8)
+      replayGainAlbumGain: -2, replayGainAlbumPeak: 0.8, isVideo: nil)
     let ids = state.replaceAll([original, track("other")])
     let updated = try XCTUnwrap(state.updateMetadata(at: 0, metadata: TrackMetadataUpdate(
       title: "New", artist: nil, albumTitle: "New album", artworkUrl: nil)))
@@ -90,7 +90,7 @@ final class QueueStateTests: XCTestCase {
       id: nil, url: url, title: nil, artist: nil, album: nil,
       duration: nil, artworkUrl: nil, extras: nil,
       replayGainTrackGain: nil, replayGainTrackPeak: nil,
-      replayGainAlbumGain: nil, replayGainAlbumPeak: nil
+      replayGainAlbumGain: nil, replayGainAlbumPeak: nil, isVideo: nil
     )
   }
 }

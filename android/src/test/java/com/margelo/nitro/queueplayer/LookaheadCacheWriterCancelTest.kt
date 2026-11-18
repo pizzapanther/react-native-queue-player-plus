@@ -23,7 +23,7 @@ class LookaheadCacheWriterCancelTest {
     id = id, url = "https://example.com/$id.m4a", title = null, artist = null, album = null,
     duration = null, artworkUrl = null, extras = null,
     replayGainTrackGain = null, replayGainTrackPeak = null,
-    replayGainAlbumGain = null, replayGainAlbumPeak = null)
+    replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null)
 
   /**
    * `CacheWriter.cache()` blocks and polls only its own cancelled flag, so a

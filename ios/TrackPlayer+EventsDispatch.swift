@@ -225,6 +225,7 @@ extension TrackPlayer {
     self.reclassifyCurrentTrackSource()
     if self.lastEmittedQueueItemId != currentItemId {
       self.lastEmittedQueueItemId = currentItemId
+      _ = self.pauseForVideoTrack()
       self.lastErrorQueueItemId = nil
       self.lastErrorCode = nil
       // A report against some OTHER track says nothing about the one now being
@@ -704,6 +705,7 @@ extension TrackPlayer {
     guard index >= 0, index < self.tracks.count else { return }
     self.currentTrackIndex = index
     let track = self.tracks[index]
+    _ = self.pauseForVideoTrack()
     // No engine call happens on this path, so nothing downstream reaches
     // `dispatchTrackChange`; do what it does for the source here.
     self.reclassifyCurrentTrackSource()

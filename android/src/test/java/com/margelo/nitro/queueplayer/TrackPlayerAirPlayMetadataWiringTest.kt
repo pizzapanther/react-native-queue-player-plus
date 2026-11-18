@@ -75,8 +75,8 @@ class TrackPlayerAirPlayMetadataWiringTest {
     // matching the production path where `onActivated` is fired after the queue
     // install reads a populated player.
     player.tracks = listOf(
-      TrackItem("t1", "https://example.com/1.m4a", null, null, null, null, null, null, null, null, null, null),
-      TrackItem("t2", "https://example.com/2.m4a", null, null, null, null, null, null, null, null, null, null),
+      TrackItem("t1", "https://example.com/1.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
+      TrackItem("t2", "https://example.com/2.m4a", null, null, null, null, null, null, null, null, null, null, isVideo = null),
     )
     player.currentTrackIndex = 0
   }

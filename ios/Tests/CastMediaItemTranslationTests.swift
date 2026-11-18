@@ -27,7 +27,7 @@ final class CastMediaItemTranslationTests: XCTestCase {
       id: "cast-1", url: url, title: "T", artist: nil, album: nil, duration: nil,
       artworkUrl: nil, extras: nil,
       replayGainTrackGain: nil, replayGainTrackPeak: nil,
-      replayGainAlbumGain: nil, replayGainAlbumPeak: nil)
+      replayGainAlbumGain: nil, replayGainAlbumPeak: nil, isVideo: nil)
   }
 
   func testAReceiverGetsTheConsumersRemoteURL() throws {

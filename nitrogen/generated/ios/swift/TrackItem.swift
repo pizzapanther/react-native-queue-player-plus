@@ -18,7 +18,7 @@ public extension TrackItem {
   /**
    * Create a new instance of `TrackItem`.
    */
-  init(id: String?, url: String, title: String?, artist: String?, album: String?, duration: Double?, artworkUrl: String?, extras: Dictionary<String, String>?, replayGainTrackGain: Double?, replayGainTrackPeak: Double?, replayGainAlbumGain: Double?, replayGainAlbumPeak: Double?) {
+  init(id: String?, url: String, title: String?, artist: String?, album: String?, duration: Double?, artworkUrl: String?, extras: Dictionary<String, String>?, replayGainTrackGain: Double?, replayGainTrackPeak: Double?, replayGainAlbumGain: Double?, replayGainAlbumPeak: Double?, isVideo: Bool?) {
     self.init({ () -> bridge.std__optional_std__string_ in
       if let __unwrappedValue = id {
         return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
@@ -88,6 +88,12 @@ public extension TrackItem {
     }(), { () -> bridge.std__optional_double_ in
       if let __unwrappedValue = replayGainAlbumPeak {
         return bridge.create_std__optional_double_(__unwrappedValue)
+      } else {
+        return .init()
+      }
+    }(), { () -> bridge.std__optional_bool_ in
+      if let __unwrappedValue = isVideo {
+        return bridge.create_std__optional_bool_(__unwrappedValue)
       } else {
         return .init()
       }
@@ -232,6 +238,18 @@ public extension TrackItem {
     return { () -> Double? in
       if bridge.has_value_std__optional_double_(self.__replayGainAlbumPeak) {
         let __unwrapped = bridge.get_std__optional_double_(self.__replayGainAlbumPeak)
+        return __unwrapped
+      } else {
+        return nil
+      }
+    }()
+  }
+
+  @inline(__always)
+  var isVideo: Bool? {
+    return { () -> Bool? in
+      if bridge.has_value_std__optional_bool_(self.__isVideo) {
+        let __unwrapped = bridge.get_std__optional_bool_(self.__isVideo)
         return __unwrapped
       } else {
         return nil

@@ -72,7 +72,7 @@ class TrackPlayerReadersTest {
       id = "local", url = "file:///queue-player-test/progress.m4a",
       title = null, artist = null, album = null, duration = null, artworkUrl = null,
       extras = null, replayGainTrackGain = null, replayGainTrackPeak = null,
-      replayGainAlbumGain = null, replayGainAlbumPeak = null)
+      replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null)
     player.setQueueInternal(listOf(track))
     serviceHandle.engine.seekTo(0, 12_500)
     val snapshot = player.getProgress()

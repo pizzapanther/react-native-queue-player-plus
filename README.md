@@ -75,6 +75,12 @@ await player.setQueue([
 await player.play();
 ```
 
+Set `isVideo: true` on a track to pause audio when that entry becomes current.
+`onTrackChange` still reports the video track and its queue index, so your app
+can open its video player. The entry stays selected, and audio play requests
+remain paused until you select an audio track. Omit `isVideo` or set it to
+`false` for normal audio playback.
+
 In React components, hooks subscribe to native event streams directly:
 
 ```tsx

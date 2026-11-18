@@ -1216,6 +1216,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
       }
 
       override fun onMediaPlay() {
+        if (pauseForVideoTrack()) return
         if (com.margelo.nitro.queueplayer.cast.CastTransportRouter.routePlay()) return
         pendingStateChangeReason = StateChangeReason.SYSTEM
         serviceBinder?.engine?.play()
@@ -2152,6 +2153,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   override fun play(): Promise<Unit> =
     Promise.async {
       onMain {
+        if (pauseForVideoTrack()) return@onMain
         // Cast routing: a live remote-player session takes the
         // transport command; otherwise fall through to the local
         // engine. Same shape at every transport entry point — see
@@ -3999,6 +4001,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   }
 
   override fun onStateMaybeChanged(engine: PlaybackEngine, playWhenReadyReason: Int?) {
+    if (engine.mediaSessionPlayer.playWhenReady && pauseForVideoTrack()) return
     if (playWhenReadyReason != null) {
       // Stamp the translated reason BEFORE [emitStateIfChanged]
       // reads it. The stamp is unconditional (not a conditional
@@ -4098,6 +4101,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     currentTrackSource = classifyTrackSource(track.url, ::servedFromCache)
     crossfadeFadeStartEmittedIdx = incomingIndex
     pendingTrackChangeReason = null
+    pauseForVideoTrack()
     logPlaybackSource(track.url)
     // New active track => new milestone playthrough (the matching
     // structural transition echo is deduped in handleMediaItemTransition).
@@ -4246,6 +4250,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     if (index == currentTrackIndex) return
     currentTrackIndex = index
     val track = tracks[index]
+    pauseForVideoTrack()
     // No engine call happens on this path, so nothing downstream
     // reclassifies the source or recomputes the skip capability the
     // way handleMediaItemTransition does for a local advance.
@@ -4310,6 +4315,19 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   private fun servedFromCache(url: String): Boolean =
     lookaheadConfig.enabled && lookaheadCache?.isFullyCached(url) == true
 
+  /** Keep a video selected for the app, with both local and remote audio paused. */
+  private fun pauseForVideoTrack(): Boolean {
+    if (tracks.getOrNull(currentTrackIndex)?.isVideo != true) return false
+    wantsToPlay = false
+    val engine = serviceBinder?.engine
+    // A normal crossfade pause reverts to the outgoing item. Keep the video
+    // as the selected incoming item before pausing instead.
+    engine?.settlePendingFadeByPromoting()
+    engine?.pause()
+    com.margelo.nitro.queueplayer.cast.CastTransportRouter.routePause()
+    return true
+  }
+
   @VisibleForTesting
   internal fun handleMediaItemTransition(reason: Int) {
     val p = player ?: return
@@ -4320,6 +4338,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
       currentTrackIndex < 0 && tracks.isNotEmpty()
     ) return
     val translated = translateTransitionReason(reason, p)
+    pauseForVideoTrack()
 
     // End-of-track sleep timer: a natural track boundary — auto-advance to the
     // next track OR a repeat-one loop of the same track (both translate to

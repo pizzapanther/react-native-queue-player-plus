@@ -227,7 +227,7 @@ class TrackPlayerLifecycleTest {
   private fun track(url: String) = TrackItem(
     id = null, url = url, title = null, artist = null, album = null, duration = null,
     artworkUrl = null, extras = null, replayGainTrackGain = null, replayGainTrackPeak = null,
-    replayGainAlbumGain = null, replayGainAlbumPeak = null)
+    replayGainAlbumGain = null, replayGainAlbumPeak = null, isVideo = null)
 
   private fun networkFailure() = androidx.media3.common.PlaybackException(
     "boom", null,

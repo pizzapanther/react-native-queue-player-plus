@@ -53,7 +53,10 @@ data class TrackItem(
   val replayGainAlbumGain: Double?,
   @DoNotStrip
   @Keep
-  val replayGainAlbumPeak: Double?
+  val replayGainAlbumPeak: Double?,
+  @DoNotStrip
+  @Keep
+  val isVideo: Boolean?
 ) {
   /* primary constructor */
 
@@ -72,6 +75,7 @@ data class TrackItem(
       && Objects.deepEquals(this.replayGainTrackPeak, other.replayGainTrackPeak)
       && Objects.deepEquals(this.replayGainAlbumGain, other.replayGainAlbumGain)
       && Objects.deepEquals(this.replayGainAlbumPeak, other.replayGainAlbumPeak)
+      && Objects.deepEquals(this.isVideo, other.isVideo)
   }
 
   override fun hashCode(): Int {
@@ -87,7 +91,8 @@ data class TrackItem(
       replayGainTrackGain,
       replayGainTrackPeak,
       replayGainAlbumGain,
-      replayGainAlbumPeak
+      replayGainAlbumPeak,
+      isVideo
     ).contentDeepHashCode()
   }
 
@@ -99,8 +104,8 @@ data class TrackItem(
     @Keep
     @Suppress("unused")
     @JvmStatic
-    private fun fromCpp(id: String?, url: String, title: String?, artist: String?, album: String?, duration: Double?, artworkUrl: String?, extras: Map<String, String>?, replayGainTrackGain: Double?, replayGainTrackPeak: Double?, replayGainAlbumGain: Double?, replayGainAlbumPeak: Double?): TrackItem {
-      return TrackItem(id, url, title, artist, album, duration, artworkUrl, extras, replayGainTrackGain, replayGainTrackPeak, replayGainAlbumGain, replayGainAlbumPeak)
+    private fun fromCpp(id: String?, url: String, title: String?, artist: String?, album: String?, duration: Double?, artworkUrl: String?, extras: Map<String, String>?, replayGainTrackGain: Double?, replayGainTrackPeak: Double?, replayGainAlbumGain: Double?, replayGainAlbumPeak: Double?, isVideo: Boolean?): TrackItem {
+      return TrackItem(id, url, title, artist, album, duration, artworkUrl, extras, replayGainTrackGain, replayGainTrackPeak, replayGainAlbumGain, replayGainAlbumPeak, isVideo)
     }
   }
 }

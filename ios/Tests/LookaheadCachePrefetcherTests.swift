@@ -490,7 +490,7 @@ final class LookaheadCachePrefetcherTests: XCTestCase {
       id: id, url: url, title: nil, artist: nil, album: nil,
       duration: nil, artworkUrl: nil, extras: nil,
       replayGainTrackGain: nil, replayGainTrackPeak: nil,
-      replayGainAlbumGain: nil, replayGainAlbumPeak: nil
+      replayGainAlbumGain: nil, replayGainAlbumPeak: nil, isVideo: nil
     )
   }
 }
