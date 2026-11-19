@@ -625,6 +625,9 @@ extension TrackPlayer {
     self.isRecoveringFromStall = false
     self.engineReconcileDeferred = false
     self.lastEmittedQueueItemId = nil
+    self.announcedTrack = nil
+    self.announcedTrackId = nil
+    self.announcedTrackPlaying = false
     self.didPlayToEndPending = false
     // `engine` + `player` are both nil now, so `activeMediaItem` is
     // nil: refresh emits null + cancels in-flight extractor Tasks via

@@ -955,26 +955,26 @@ namespace margelo::nitro::queueplayer::bridge::swift {
     return Func_void_PlayerState_StateChangeReason_Wrapper(std::move(value));
   }
   
-  // pragma MARK: std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */)>
+  // pragma MARK: std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */, const std::optional<TrackItem>& /* previousTrack */, bool /* wasPlaying */)>
   /**
-   * Specialized version of `std::function<void(const std::optional<TrackItem>&, double, TrackChangeReason, std::optional<double>)>`.
+   * Specialized version of `std::function<void(const std::optional<TrackItem>&, double, TrackChangeReason, std::optional<double>, const std::optional<TrackItem>&, bool)>`.
    */
-  using Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_ = std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */)>;
+  using Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool = std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */, const std::optional<TrackItem>& /* previousTrack */, bool /* wasPlaying */)>;
   /**
-   * Wrapper class for a `std::function<void(const std::optional<TrackItem>& / * track * /, double / * index * /, TrackChangeReason / * reason * /, std::optional<double> / * transitionGapMs * /)>`, this can be used from Swift.
+   * Wrapper class for a `std::function<void(const std::optional<TrackItem>& / * track * /, double / * index * /, TrackChangeReason / * reason * /, std::optional<double> / * transitionGapMs * /, const std::optional<TrackItem>& / * previousTrack * /, bool / * wasPlaying * /)>`, this can be used from Swift.
    */
-  class Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__Wrapper final {
+  class Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool_Wrapper final {
   public:
-    explicit Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__Wrapper(std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */)>&& func): _function(std::make_unique<std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */)>>(std::move(func))) {}
-    inline void call(std::optional<TrackItem> track, double index, int reason, std::optional<double> transitionGapMs) const noexcept {
-      _function->operator()(track, index, static_cast<TrackChangeReason>(reason), transitionGapMs);
+    explicit Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool_Wrapper(std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */, const std::optional<TrackItem>& /* previousTrack */, bool /* wasPlaying */)>&& func): _function(std::make_unique<std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */, const std::optional<TrackItem>& /* previousTrack */, bool /* wasPlaying */)>>(std::move(func))) {}
+    inline void call(std::optional<TrackItem> track, double index, int reason, std::optional<double> transitionGapMs, std::optional<TrackItem> previousTrack, bool wasPlaying) const noexcept {
+      _function->operator()(track, index, static_cast<TrackChangeReason>(reason), transitionGapMs, previousTrack, wasPlaying);
     }
   private:
-    std::unique_ptr<std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */)>> _function;
+    std::unique_ptr<std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */, const std::optional<TrackItem>& /* previousTrack */, bool /* wasPlaying */)>> _function;
   } SWIFT_NONCOPYABLE;
-  Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_ create_Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_(void* NON_NULL swiftClosureWrapper) noexcept;
-  inline Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__Wrapper wrap_Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_(Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_ value) noexcept {
-    return Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__Wrapper(std::move(value));
+  Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool create_Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool(void* NON_NULL swiftClosureWrapper) noexcept;
+  inline Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool_Wrapper wrap_Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool(Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool value) noexcept {
+    return Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool_Wrapper(std::move(value));
   }
   
   // pragma MARK: std::function<void(const TimedMetadata& /* metadata */)>

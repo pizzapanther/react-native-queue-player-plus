@@ -272,7 +272,7 @@ extension TrackPlayer {
       // consumer's track-keyed handlers run before the format-refresh
       // emits null. Matches Android's onMediaItemTransition →
       // refreshNowPlayingFormatForActiveItem ordering.
-      trackChangeListeners.forEach { $0(track, Double(idx), reason, transitionGapMs) }
+      emitTrackChange(track, index: Double(idx), reason: reason, gap: transitionGapMs)
       self.refreshNowPlayingFormatForActiveItem()
       self.nowPlayingInfo.refreshAll(self.nowPlayingSnapshot(), trigger: .trackChange)
       // Kick the network resolve. The placeholder is already on the
@@ -616,10 +616,23 @@ extension TrackPlayer {
     return reason
   }
 
+  internal func emitTrackChange(_ track: TrackItem?, index: Double, reason: TrackChangeReason, gap: Double?) {
+    let previousTrack = self.announcedTrack
+    let wasPlaying = previousTrack != nil && self.announcedTrackPlaying
+    self.announcedTrack = track
+    self.announcedTrackId = self.queueItemIds[safe: Int(index)]
+    self.announcedTrackPlaying = track != nil && track?.isVideo != true && self.lastReportedState == .playing
+    self.trackChangeListeners.forEach { $0(track, index, reason, gap, previousTrack, wasPlaying) }
+  }
+
   /// Bypass the timeControlStatus translation and emit a specific
   /// state directly (used for `.ended` / `.error` which AVPlayer
   /// doesn't model as timeControlStatus).
   internal func emitState(_ state: PlayerState, reason: StateChangeReason) {
+    // Loading the incoming item must not overwrite the outgoing item's state.
+    if !self.isMutatingPlayerQueue && self.announcedTrackId != nil && self.announcedTrackId == self.queueItemIds[safe: self.currentTrackIndex] {
+      self.announcedTrackPlaying = state == .playing
+    }
     // Playback (re)starting clears `reachedQueueEnd` — do this BEFORE the
     // dedup guard so a redundant `.playing` re-emit still clears it.
     if state == .playing {
@@ -709,7 +722,7 @@ extension TrackPlayer {
     // No engine call happens on this path, so nothing downstream reaches
     // `dispatchTrackChange`; do what it does for the source here.
     self.reclassifyCurrentTrackSource()
-    self.trackChangeListeners.forEach { $0(track, Double(index), .autoAdvance, nil) }
+    self.emitTrackChange(track, index: Double(index), reason: .autoAdvance, gap: nil)
     // `currentTrackIndex` just moved — recompute skip capability so the
     // receiver's advance updates canSkipPrevious/Next (skip-back enables
     // once off the first track), same as every local index write.

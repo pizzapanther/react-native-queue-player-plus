@@ -161,11 +161,11 @@ namespace margelo::nitro::queueplayer::bridge::swift {
     };
   }
   
-  // pragma MARK: std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */)>
-  Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_ create_Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_(void* NON_NULL swiftClosureWrapper) noexcept {
-    auto swiftClosure = QueuePlayer::Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_::fromUnsafe(swiftClosureWrapper);
-    return [swiftClosure = std::move(swiftClosure)](const std::optional<TrackItem>& track, double index, TrackChangeReason reason, std::optional<double> transitionGapMs) mutable -> void {
-      swiftClosure.call(track, index, static_cast<int>(reason), transitionGapMs);
+  // pragma MARK: std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */, const std::optional<TrackItem>& /* previousTrack */, bool /* wasPlaying */)>
+  Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool create_Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool(void* NON_NULL swiftClosureWrapper) noexcept {
+    auto swiftClosure = QueuePlayer::Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool::fromUnsafe(swiftClosureWrapper);
+    return [swiftClosure = std::move(swiftClosure)](const std::optional<TrackItem>& track, double index, TrackChangeReason reason, std::optional<double> transitionGapMs, const std::optional<TrackItem>& previousTrack, bool wasPlaying) mutable -> void {
+      swiftClosure.call(track, index, static_cast<int>(reason), transitionGapMs, previousTrack, wasPlaying);
     };
   }
   

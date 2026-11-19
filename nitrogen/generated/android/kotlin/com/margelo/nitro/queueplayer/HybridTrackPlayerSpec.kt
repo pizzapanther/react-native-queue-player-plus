@@ -212,11 +212,11 @@ abstract class HybridTrackPlayerSpec: HybridObject() {
     return Func_void_java(__result)
   }
   
-  abstract fun onTrackChange(callback: (track: TrackItem?, index: Double, reason: TrackChangeReason, transitionGapMs: Double?) -> Unit): () -> Unit
+  abstract fun onTrackChange(callback: (track: TrackItem?, index: Double, reason: TrackChangeReason, transitionGapMs: Double?, previousTrack: TrackItem?, wasPlaying: Boolean) -> Unit): () -> Unit
   
   @DoNotStrip
   @Keep
-  private fun onTrackChange_cxx(callback: Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_): Func_void {
+  private fun onTrackChange_cxx(callback: Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool): Func_void {
     val __result = onTrackChange(callback)
     return Func_void_java(__result)
   }

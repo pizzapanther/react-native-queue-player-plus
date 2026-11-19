@@ -202,7 +202,7 @@ class TrackPlayerQueueTest {
       val currentIndexAtFire: Int,
     )
     val received = mutableListOf<Snap>()
-    player.onTrackChange { t, idx, reason, _ ->
+    player.onTrackChange { t, idx, reason, _, _, _ ->
       received.add(
         Snap(
           track = t,

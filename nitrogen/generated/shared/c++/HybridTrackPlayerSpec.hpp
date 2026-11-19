@@ -184,7 +184,7 @@ namespace margelo::nitro::queueplayer {
       virtual SkipCapability getSkipCapability() = 0;
       virtual SleepTimerState getSleepTimer() = 0;
       virtual std::function<void()> onStateChange(const std::function<void(PlayerState /* state */, StateChangeReason /* reason */)>& callback) = 0;
-      virtual std::function<void()> onTrackChange(const std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */)>& callback) = 0;
+      virtual std::function<void()> onTrackChange(const std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */, const std::optional<TrackItem>& /* previousTrack */, bool /* wasPlaying */)>& callback) = 0;
       virtual std::function<void()> onTimedMetadata(const std::function<void(const TimedMetadata& /* metadata */)>& callback) = 0;
       virtual std::function<void()> onQueueChange(const std::function<void(const QueueChangeDelta& /* delta */, double /* currentIndex */, QueueChangeReason /* reason */)>& callback) = 0;
       virtual std::function<void()> onProgress(const std::function<void(const PlayerProgress& /* progress */)>& callback) = 0;

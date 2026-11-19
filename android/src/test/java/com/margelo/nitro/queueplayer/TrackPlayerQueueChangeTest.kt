@@ -112,7 +112,7 @@ class TrackPlayerQueueChangeTest {
     engine.seekTo(0, 12_000)
     val (events, dispose) = capture()
     var trackChanges = 0
-    val offTrack = player.onTrackChange { _, _, _, _ -> trackChanges++ }
+    val offTrack = player.onTrackChange { _, _, _, _, _, _ -> trackChanges++ }
     val before = engine.currentMediaItem!!
     player.updateMetadataInternal(0.0, TrackMetadataUpdate("New", null, "New album", null))
     val expected = original.copy(title = "New", album = "New album")

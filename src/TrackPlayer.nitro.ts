@@ -392,13 +392,19 @@ export interface TrackPlayer
    * `< 1ms` for native gapless auto-advance (AVQueuePlayer / Media3
    * ExoPlayer are gapless by design) — a larger value flags a
    * scheduling regression (a useful CI assertion seed).
+   *
+   * `previousTrack` is the item switched from, or `undefined` when there
+   * was no active item. `wasPlaying` reports whether that item was playing
+   * before the switch (false when there was no previous item).
    */
   onTrackChange(
     callback: (
       track: TrackItem | undefined,
       index: number,
       reason: TrackChangeReason,
-      transitionGapMs: number | undefined
+      transitionGapMs: number | undefined,
+      previousTrack: TrackItem | undefined,
+      wasPlaying: boolean
     ) => void
   ): () => void;
   /**

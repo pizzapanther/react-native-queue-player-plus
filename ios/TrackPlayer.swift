@@ -258,7 +258,7 @@ class TrackPlayer: HybridTrackPlayerSpec {
   // multiple consumers (Player UI, harness, test runner) subscribe
   // simultaneously without clobbering each other.
   internal let stateChangeListeners = ListenerRegistry<(PlayerState, StateChangeReason) -> Void>()
-  internal let trackChangeListeners = ListenerRegistry<(TrackItem?, Double, TrackChangeReason, Double?) -> Void>()
+  internal let trackChangeListeners = ListenerRegistry<(TrackItem?, Double, TrackChangeReason, Double?, TrackItem?, Bool) -> Void>()
   internal let timedMetadataListeners = ListenerRegistry<(TimedMetadata) -> Void>()
   internal var timedMetadataObservation: TimedMetadataObservation?
   internal let queueChangeListeners = ListenerRegistry<(QueueChangeDelta, Double, QueueChangeReason) -> Void>()
@@ -646,6 +646,9 @@ class TrackPlayer: HybridTrackPlayerSpec {
   /// fires emissions correctly for setQueue + skip + auto-advance
   /// while still suppressing redundant fires.
   internal var lastEmittedQueueItemId: String? = nil
+  internal var announcedTrack: TrackItem? = nil
+  internal var announcedTrackId: String? = nil
+  internal var announcedTrackPlaying = false
 
   /// Cached classification of the active track's playback source.
   /// Recomputed in `dispatchTrackChange` whenever the active track

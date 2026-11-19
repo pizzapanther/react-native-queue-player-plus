@@ -520,7 +520,7 @@ extension TrackPlayer {
       // not a one-frame (old queue, index -1) transient. Only when the
       // queue was actually non-empty — clearing an empty queue is a no-op.
       if queueWasNonEmpty { self.emitQueueChange(.clear) }
-      self.trackChangeListeners.forEach { $0(nil, Double(-1), .queueReplaced, nil) }
+      self.emitTrackChange(nil, index: -1, reason: .queueReplaced, gap: nil)
       self.nowPlayingInfo.refreshAll(self.nowPlayingSnapshot(), trigger: .queueCleared)
       self.artworkResolver.cancelInFlight()
       // Drop any cached now-playing format + emit null so JS-side

@@ -70,6 +70,48 @@ class TrackPlayerEventsTest {
   // --- onProgress registration lifecycle
 
   @Test
+  fun `video selection reports outgoing playback before pausing the incoming video`() {
+    val audio = track("audio")
+    val video = track("video").copy(isVideo = true)
+    player.setQueueInternal(listOf(audio, video))
+    player.emitRemoteState(PlayerState.PLAYING, StateChangeReason.SYSTEM)
+    var previous: TrackItem? = null
+    var wasPlaying = false
+    player.onTrackChange { _, _, _, _, old, playing ->
+      previous = old
+      wasPlaying = playing
+    }
+    player.skipToIndexInternal(1)
+    assertEquals(audio, previous)
+    assertTrue(wasPlaying)
+    assertFalse(player.player!!.playWhenReady)
+    player.skipToIndexInternal(0)
+    assertEquals(video, previous)
+    assertFalse(wasPlaying)
+  }
+
+  @Test
+  fun `track changes retain outgoing track and playing state across replacement and clear`() {
+    val events = mutableListOf<Pair<TrackItem?, Boolean>>()
+    player.onTrackChange { _, _, _, _, previous, playing -> events.add(previous to playing) }
+    val first = track("first")
+    val second = track("second")
+    player.setQueueInternal(listOf(first, second))
+    assertEquals(null to false, events.last())
+    player.emitRemoteState(PlayerState.PLAYING, StateChangeReason.SYSTEM)
+    player.emitRemoteTrackChange(1)
+    assertEquals(first to true, events.last())
+    player.emitRemoteState(PlayerState.PAUSED, StateChangeReason.SYSTEM)
+    player.setQueueInternal(listOf(track("replacement")))
+    assertEquals(second to false, events.last())
+    player.emitRemoteState(PlayerState.PLAYING, StateChangeReason.SYSTEM)
+    player.clearQueueInternal()
+    assertEquals(track("replacement") to true, events.last())
+    player.setQueueInternal(listOf(first))
+    assertEquals(null to false, events.last())
+  }
+
+  @Test
   fun `timed metadata supports multiple subscribers and drops retired engines`() {
     player.setQueueInternal(listOf(track("stream")))
     val first = mutableListOf<TimedMetadata>()
@@ -198,7 +240,7 @@ class TrackPlayerEventsTest {
   fun `onTrackChange delivers to a subscriber and stops after unsubscribe`() {
     player.setQueueInternal((1..3).map { track("t$it") })
     var fired = 0
-    val unsubscribe = player.onTrackChange { _, _, _, _ -> fired += 1 }
+    val unsubscribe = player.onTrackChange { _, _, _, _, _, _ -> fired += 1 }
 
     player.emitRemoteTrackChange(1)
     assertEquals(1, fired)
@@ -347,7 +389,7 @@ class TrackPlayerEventsTest {
     player.setQueueInternal(listOf(track("audio"), video))
     player.player!!.playWhenReady = true
     val events = mutableListOf<Pair<TrackItem?, Double>>()
-    player.onTrackChange { track, index, _, _ ->
+    player.onTrackChange { track, index, _, _, _, _ ->
       assertFalse(player.player!!.playWhenReady)
       events.add(track to index)
     }
@@ -365,7 +407,7 @@ class TrackPlayerEventsTest {
   fun `first added video emits at index zero and stays paused`() {
     val video = track("video").copy(isVideo = true)
     val events = mutableListOf<Pair<TrackItem?, Double>>()
-    player.onTrackChange { track, index, _, _ -> events.add(track to index) }
+    player.onTrackChange { track, index, _, _, _, _ -> events.add(track to index) }
     player.addToQueueInternal(listOf(video), null)
     player.skipToIndexInternal(0)
     assertEquals(listOf(video to 0.0), events)
@@ -392,7 +434,7 @@ class TrackPlayerEventsTest {
     player.currentTrackIndex = 0
     player.player!!.playWhenReady = true
     val events = mutableListOf<Triple<TrackItem?, Double, TrackChangeReason>>()
-    player.onTrackChange { track, index, reason, _ ->
+    player.onTrackChange { track, index, reason, _, _, _ ->
       assertFalse(player.player!!.playWhenReady)
       events.add(Triple(track, index, reason))
     }
@@ -404,7 +446,7 @@ class TrackPlayerEventsTest {
   fun `selecting the first added track emits its track and index exactly once`() {
     val added = track("added")
     val events = mutableListOf<Triple<TrackItem?, Double, TrackChangeReason>>()
-    player.onTrackChange { track, index, reason, _ -> events.add(Triple(track, index, reason)) }
+    player.onTrackChange { track, index, reason, _, _, _ -> events.add(Triple(track, index, reason)) }
 
     player.addToQueueInternal(listOf(added), null)
     assertEquals(-1, player.currentTrackIndex)
@@ -426,7 +468,7 @@ class TrackPlayerEventsTest {
     player.setQueueInternal(listOf(track("old")))
     val added = track("added")
     val events = mutableListOf<Pair<TrackItem?, Double>>()
-    player.onTrackChange { track, index, _, _ -> events.add(track to index) }
+    player.onTrackChange { track, index, _, _, _, _ -> events.add(track to index) }
 
     player.addToQueueInternal(listOf(added), null)
     player.skipToIndexInternal(1)
@@ -480,7 +522,7 @@ class TrackPlayerEventsTest {
     player.currentTrackIndex = 2
 
     var observedReason: TrackChangeReason? = null
-    player.onTrackChange { _, _, reason, _ -> observedReason = reason }
+    player.onTrackChange { _, _, reason, _, _, _ -> observedReason = reason }
 
     // Pretend skipToNextInternal had just stashed this before the
     // Media3 seek landed.
@@ -504,7 +546,7 @@ class TrackPlayerEventsTest {
     player.currentTrackIndex = 2
 
     var observedReason: TrackChangeReason? = null
-    player.onTrackChange { _, _, reason, _ -> observedReason = reason }
+    player.onTrackChange { _, _, reason, _, _, _ -> observedReason = reason }
 
     player.handleMediaItemTransition(
       reason = Player.MEDIA_ITEM_TRANSITION_REASON_SEEK
@@ -525,7 +567,7 @@ class TrackPlayerEventsTest {
 
     var observedTrack: TrackItem? = null
     var observedIndex = -999.0
-    player.onTrackChange { track, idx, _, _ ->
+    player.onTrackChange { track, idx, _, _, _, _ ->
       observedTrack = track
       observedIndex = idx
     }
@@ -554,7 +596,7 @@ class TrackPlayerEventsTest {
 
     var observed: Double? = -1.0
     var fired = false
-    player.onTrackChange { _, _, _, gap ->
+    player.onTrackChange { _, _, _, gap, _, _ ->
       observed = gap
       fired = true
     }
@@ -575,7 +617,7 @@ class TrackPlayerEventsTest {
     player.currentTrackIndex = 1
 
     var observed: Double? = -1.0
-    player.onTrackChange { _, _, _, gap -> observed = gap }
+    player.onTrackChange { _, _, _, gap, _, _ -> observed = gap }
 
     player.handleMediaItemTransition(
       reason = Player.MEDIA_ITEM_TRANSITION_REASON_SEEK

@@ -876,11 +876,11 @@ open class HybridTrackPlayerSpec_cxx {
   }
   
   @inline(__always)
-  public final func onTrackChange(callback: bridge.Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_) -> bridge.Result_std__function_void____ {
+  public final func onTrackChange(callback: bridge.Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool) -> bridge.Result_std__function_void____ {
     do {
-      let __result = try self.__implementation.onTrackChange(callback: { () -> (TrackItem?, Double, TrackChangeReason, Double?) -> Void in
-        let __wrappedFunction = bridge.wrap_Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_(callback)
-        return { (__track: TrackItem?, __index: Double, __reason: TrackChangeReason, __transitionGapMs: Double?) -> Void in
+      let __result = try self.__implementation.onTrackChange(callback: { () -> (TrackItem?, Double, TrackChangeReason, Double?, TrackItem?, Bool) -> Void in
+        let __wrappedFunction = bridge.wrap_Func_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool(callback)
+        return { (__track: TrackItem?, __index: Double, __reason: TrackChangeReason, __transitionGapMs: Double?, __previousTrack: TrackItem?, __wasPlaying: Bool) -> Void in
           __wrappedFunction.call({ () -> bridge.std__optional_TrackItem_ in
             if let __unwrappedValue = __track {
               return bridge.create_std__optional_TrackItem_(__unwrappedValue)
@@ -893,7 +893,13 @@ open class HybridTrackPlayerSpec_cxx {
             } else {
               return .init()
             }
-          }())
+          }(), { () -> bridge.std__optional_TrackItem_ in
+            if let __unwrappedValue = __previousTrack {
+              return bridge.create_std__optional_TrackItem_(__unwrappedValue)
+            } else {
+              return .init()
+            }
+          }(), __wasPlaying)
         }
       }())
       let __resultCpp = { () -> bridge.Func_void in

@@ -14,6 +14,7 @@ extension TrackPlayer {
     // AVPlayerItems carry media, not our display metadata. Keep those exact
     // items installed, including both legs of an in-flight crossfade.
     if index == currentTrackIndex {
+      self.announcedTrack = updated
       let artworkChanged = oldArtwork != updated.artworkUrl
       nowPlayingInfo.refreshMetadata(nowPlayingSnapshot(), artworkChanged: artworkChanged)
       if artworkChanged {

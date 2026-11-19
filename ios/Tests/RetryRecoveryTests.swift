@@ -16,7 +16,7 @@ final class RetryRecoveryTests: XCTestCase {
     player.currentTrackIndex = 0
     player.wantsToPlay = true
     var calls = 0
-    let unsubscribe = try player.onTrackChange { track, index, _, _ in
+    let unsubscribe = try player.onTrackChange { track,, _, _ index, _, _ in
       calls += 1
       XCTAssertEqual(track?.isVideo, true)
       XCTAssertEqual(index, 0)

@@ -345,8 +345,12 @@ export interface TrackPlayer extends HybridObject<{
      * `< 1ms` for native gapless auto-advance (AVQueuePlayer / Media3
      * ExoPlayer are gapless by design) — a larger value flags a
      * scheduling regression (a useful CI assertion seed).
+     *
+     * `previousTrack` is the item switched from, or `undefined` when there
+     * was no active item. `wasPlaying` reports whether that item was playing
+     * before the switch (false when there was no previous item).
      */
-    onTrackChange(callback: (track: TrackItem | undefined, index: number, reason: TrackChangeReason, transitionGapMs: number | undefined) => void): () => void;
+    onTrackChange(callback: (track: TrackItem | undefined, index: number, reason: TrackChangeReason, transitionGapMs: number | undefined, previousTrack: TrackItem | undefined, wasPlaying: boolean) => void): () => void;
     /**
      * In-stream metadata delivered when playback reaches the sample's timestamp,
      * including HLS/ID3 and ICY metadata supported by the native player. Buffering

@@ -17,7 +17,7 @@ extension TrackPlayer {
   }
 
   func onTrackChange(
-    callback: @escaping (_ track: TrackItem?, _ index: Double, _ reason: TrackChangeReason, _ transitionGapMs: Double?) -> Void
+    callback: @escaping (_ track: TrackItem?, _ index: Double, _ reason: TrackChangeReason, _ transitionGapMs: Double?, _ previousTrack: TrackItem?, _ wasPlaying: Bool) -> Void
   ) throws -> () -> Void {
     let id = trackChangeListeners.add(callback)
     return { [weak self] in self?.trackChangeListeners.remove(id: id) }

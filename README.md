@@ -83,6 +83,17 @@ can open its video player. The entry stays selected, and audio play requests
 remain paused until you select an audio track. Omit `isVideo` or set it to
 `false` for normal audio playback.
 
+Track-change callbacks also receive the outgoing item and its playback state:
+
+```ts
+const unsubscribe = player.onTrackChange(
+  (track, index, reason, transitionGapMs, previousTrack, wasPlaying) => {
+    // previousTrack is undefined on the first selection; wasPlaying is false.
+    console.log({ track, previousTrack, wasPlaying });
+  }
+);
+```
+
 In React components, hooks subscribe to native event streams directly:
 
 ```tsx

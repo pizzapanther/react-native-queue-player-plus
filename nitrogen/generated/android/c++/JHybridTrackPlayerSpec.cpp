@@ -178,7 +178,7 @@ namespace margelo::nitro::queueplayer { struct LookaheadCacheConfig; }
 #include "JFunc_void_PlayerState_StateChangeReason.hpp"
 #include "JStateChangeReason.hpp"
 #include "TrackChangeReason.hpp"
-#include "JFunc_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_.hpp"
+#include "JFunc_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool.hpp"
 #include "JTrackChangeReason.hpp"
 #include "TimedMetadata.hpp"
 #include "JFunc_void_TimedMetadata.hpp"
@@ -799,9 +799,9 @@ namespace margelo::nitro::queueplayer {
       }
     }();
   }
-  std::function<void()> JHybridTrackPlayerSpec::onTrackChange(const std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */)>& callback) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JFunc_void::javaobject>(jni::alias_ref<JFunc_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double_::javaobject> /* callback */)>("onTrackChange_cxx");
-    auto __result = method(_javaPart, JFunc_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__cxx::fromCpp(callback));
+  std::function<void()> JHybridTrackPlayerSpec::onTrackChange(const std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */, const std::optional<TrackItem>& /* previousTrack */, bool /* wasPlaying */)>& callback) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JFunc_void::javaobject>(jni::alias_ref<JFunc_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool::javaobject> /* callback */)>("onTrackChange_cxx");
+    auto __result = method(_javaPart, JFunc_void_std__optional_TrackItem__double_TrackChangeReason_std__optional_double__std__optional_TrackItem__bool_cxx::fromCpp(callback));
     return [&]() -> std::function<void()> {
       if (__result->isInstanceOf(JFunc_void_cxx::javaClassStatic())) [[likely]] {
         auto downcast = jni::static_ref_cast<JFunc_void_cxx::javaobject>(__result);

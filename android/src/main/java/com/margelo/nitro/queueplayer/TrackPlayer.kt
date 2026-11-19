@@ -699,7 +699,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   // multiple consumers (Player UI, harness, test runner) subscribe
   // simultaneously without clobbering each other.
   private val stateChangeListeners = ListenerRegistry<(PlayerState, StateChangeReason) -> Unit>()
-  private val trackChangeListeners = ListenerRegistry<(TrackItem?, Double, TrackChangeReason, Double?) -> Unit>()
+  private val trackChangeListeners = ListenerRegistry<(TrackItem?, Double, TrackChangeReason, Double?, TrackItem?, Boolean) -> Unit>()
   private val timedMetadataListeners = ListenerRegistry<(TimedMetadata) -> Unit>()
   private val queueChangeListeners = ListenerRegistry<(QueueChangeDelta, Double, QueueChangeReason) -> Unit>()
   private val progressListeners = ListenerRegistry<(PlayerProgress) -> Unit>()
@@ -888,6 +888,9 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
    *  (index shifts invalidate keys; budget resets are an acceptable
    *  trade-off vs walking + remapping the map per shifted index). */
   private var retryAttemptsRemaining: MutableMap<Int, Int> = mutableMapOf()
+
+  private var announcedTrack: TrackItem? = null
+  private var announcedTrackPlaying = false
 
   /** Last [PlayerState] emitted to subscribers. Suppresses duplicate
    *  fires — Media3 listener can emit several status transitions
@@ -1449,6 +1452,8 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     hasStartedPlaying = false
     wantsToPlay = false
     lastReportedState = PlayerState.NONE
+    announcedTrack = null
+    announcedTrackPlaying = false
     refreshNowPlayingFormatForActiveItem()
     recomputeCapabilities()
   }
@@ -2072,6 +2077,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     )
     if (old == updated) return
     tracks = tracks.toMutableList().apply { this[position] = updated }
+    if (position == currentTrackIndex) announcedTrack = updated
     engine.updateMetadata(position, MediaItemBuilder.buildMetadata(ctx, updated, config.placeholderArtworkUri))
     emitQueueChange(QueueChangeReason.UPDATE_METADATA, inserted = arrayOf(updated), insertedAt = position)
   }
@@ -3322,7 +3328,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   }
 
   override fun onTrackChange(
-    callback: (track: TrackItem?, index: Double, reason: TrackChangeReason, transitionGapMs: Double?) -> Unit
+    callback: (track: TrackItem?, index: Double, reason: TrackChangeReason, transitionGapMs: Double?, previousTrack: TrackItem?, wasPlaying: Boolean) -> Unit
   ): () -> Unit {
     val id = trackChangeListeners.add(callback)
     return { trackChangeListeners.remove(id) }
@@ -4110,9 +4116,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     // New active track => new milestone playthrough (the matching
     // structural transition echo is deduped in handleMediaItemTransition).
     milestoneTracker.reset()
-    trackChangeListeners.forEach {
-      it(track, incomingIndex.toDouble(), TrackChangeReason.AUTO_ADVANCE, null)
-    }
+    emitTrackChange(track, incomingIndex.toDouble(), TrackChangeReason.AUTO_ADVANCE, null)
     refreshNowPlayingFormatForActiveItem()
     recomputeCapabilities()
     rescheduleLookahead()
@@ -4158,9 +4162,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     val track = tracks[revertedIndex]
     currentTrackSource = classifyTrackSource(track.url, ::servedFromCache)
     pendingTrackChangeReason = null
-    trackChangeListeners.forEach {
-      it(track, revertedIndex.toDouble(), TrackChangeReason.CROSSFADE_CANCELLED, null)
-    }
+    emitTrackChange(track, revertedIndex.toDouble(), TrackChangeReason.CROSSFADE_CANCELLED, null)
     refreshNowPlayingFormatForActiveItem()
     recomputeCapabilities()
     rescheduleLookahead()
@@ -4215,6 +4217,16 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     }
   }
 
+  // Keep the outgoing snapshot through queue replacement/removal and through
+  // state changes caused by loading or pausing the incoming item.
+  private fun emitTrackChange(track: TrackItem?, index: Double, reason: TrackChangeReason, gap: Double?) {
+    val previousTrack = announcedTrack
+    val wasPlaying = previousTrack != null && announcedTrackPlaying
+    announcedTrack = track
+    announcedTrackPlaying = track != null && track.isVideo != true && lastReportedState == PlayerState.PLAYING
+    trackChangeListeners.forEach { it(track, index, reason, gap, previousTrack, wasPlaying) }
+  }
+
   /**
    * Single source of dedup truth for state emits. Returns true when
    * the listener actually fired (state changed since the last emit),
@@ -4222,6 +4234,9 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
    * QUEUE_END) and indirectly via [emitStateIfChanged].
    */
   private fun emitState(state: PlayerState, reason: StateChangeReason): Boolean {
+    if (announcedTrack != null && tracks.getOrNull(currentTrackIndex) === announcedTrack) {
+      announcedTrackPlaying = state == PlayerState.PLAYING
+    }
     if (state == lastReportedState) return false
     lastReportedState = state
     // Once the track actually plays, a later STATE_BUFFERING is a mid-playback
@@ -4259,7 +4274,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     // reclassifies the source or recomputes the skip capability the
     // way handleMediaItemTransition does for a local advance.
     currentTrackSource = classifyTrackSource(track.url, ::servedFromCache)
-    trackChangeListeners.forEach { it(track, index.toDouble(), TrackChangeReason.AUTO_ADVANCE, null) }
+    emitTrackChange(track, index.toDouble(), TrackChangeReason.AUTO_ADVANCE, null)
     recomputeCapabilities()
   }
 
@@ -4402,7 +4417,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
       // until it reaches a playing state, and it starts not-fully-buffered.
       hasStartedPlaying = false
       recomputeFullyBuffered()
-      trackChangeListeners.forEach { it(track, currentTrackIndex.toDouble(), translated, transitionGapMs) }
+      emitTrackChange(track, currentTrackIndex.toDouble(), translated, transitionGapMs)
     }
 
     // Native auto-advance (REASON_AUTO / REASON_REPEAT) shifts

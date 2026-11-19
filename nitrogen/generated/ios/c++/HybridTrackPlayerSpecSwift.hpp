@@ -568,7 +568,7 @@ namespace margelo::nitro::queueplayer {
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::function<void()> onTrackChange(const std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */)>& callback) override {
+    inline std::function<void()> onTrackChange(const std::function<void(const std::optional<TrackItem>& /* track */, double /* index */, TrackChangeReason /* reason */, std::optional<double> /* transitionGapMs */, const std::optional<TrackItem>& /* previousTrack */, bool /* wasPlaying */)>& callback) override {
       auto __result = _swiftPart.onTrackChange(callback);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
