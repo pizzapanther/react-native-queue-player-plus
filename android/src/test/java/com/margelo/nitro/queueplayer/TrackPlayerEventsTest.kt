@@ -67,6 +67,42 @@ class TrackPlayerEventsTest {
     serviceHandle.destroy()
   }
 
+  @Test
+  fun `silent skips update selection and preserve the next outgoing snapshot`() {
+    val items = listOf(track("first"), track("second"), track("third"))
+    player.setQueueInternal(items)
+    val previous = mutableListOf<TrackItem?>()
+    player.onTrackChange { _, _, _, _, old, _ -> previous.add(old) }
+
+    player.skipToIndexInternal(1, silent = true)
+    assertEquals(1.0, player.getCurrentTrackIndex(), 0.0)
+    assertEquals(1, player.player!!.currentMediaItemIndex)
+    assertTrue(previous.isEmpty())
+    player.skipToNextInternal(silent = true)
+    assertEquals(2.0, player.getCurrentTrackIndex(), 0.0)
+    assertEquals(2, player.player!!.currentMediaItemIndex)
+    assertTrue(previous.isEmpty())
+
+    player.skipToIndexInternal(0, silent = false)
+    assertEquals(listOf(items[2]), previous)
+    player.skipToNextInternal()
+    assertEquals(listOf(items[2], items[0]), previous)
+  }
+
+  @Test
+  fun `silent no-op does not suppress a later transition`() {
+    player.setQueueInternal(listOf(track("first"), track("second")))
+    var fired = 0
+    player.onTrackChange { _, _, _, _, _, _ -> fired++ }
+    player.skipToIndexInternal(0, silent = true)
+    player.skipToIndexInternal(99, silent = true)
+    player.skipToNextInternal()
+    assertEquals(1, fired)
+    player.skipToNextInternal(silent = true)
+    player.skipToIndexInternal(0)
+    assertEquals(2, fired)
+  }
+
   // --- onProgress registration lifecycle
 
   @Test

@@ -2,6 +2,33 @@ import XCTest
 @testable import QueuePlayer
 
 final class TrackPlayerStateDedupTests: XCTestCase {
+  func testSilentTransitionUpdatesOutgoingSnapshotAndOnlySuppressesMatchingEvent() throws {
+    let player = TrackPlayer()
+    let first = PlayerFixtures.track(id: "first", url: "https://example.com/first.mp3")
+    let second = PlayerFixtures.track(id: "second", url: "https://example.com/second.mp3")
+    var previousIds: [String?] = []
+    let dispose = try player.onTrackChange { _, _, _, _, previous, _ in
+      previousIds.append(previous?.id)
+    }
+    player.onPlayerQueueSync {
+      _ = player.queueState.replaceAll([first, second])
+      player.currentTrackIndex = 0
+      player.emitTrackChange(first, index: 0, reason: .queueReplaced, gap: nil)
+      player.silentTrackChange = (1, .userSkipNext)
+      player.currentTrackIndex = 1
+      player.emitTrackChange(second, index: 1, reason: .userSkipNext, gap: nil)
+      XCTAssertEqual(previousIds.count, 1)
+      XCTAssertEqual(player.announcedTrack?.id, "second")
+      player.currentTrackIndex = 0
+      player.emitTrackChange(first, index: 0, reason: .userSkipToIndex, gap: nil)
+      XCTAssertEqual(previousIds, [nil, "second"])
+      player.silentTrackChange = (1, .userSkipNext)
+      player.emitTrackChange(second, index: 1, reason: .autoAdvance, gap: nil)
+      XCTAssertEqual(previousIds.count, 3)
+    }
+    dispose()
+  }
+
   func testTrackChangesRetainOutgoingTrackAndStateAcrossReplacementAndClear() throws {
     let player = TrackPlayer()
     var previousIds: [String?] = []

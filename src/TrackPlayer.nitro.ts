@@ -154,8 +154,12 @@ export interface TrackPlayer
   retry(): Promise<void>;
   /** position in seconds from the start of the current track */
   seekTo(position: number): Promise<void>;
-  skipToIndex(index: number): Promise<void>;
-  skipToNext(): Promise<void>;
+  /** Select a track. `silent` defaults to false; true suppresses onTrackChange only.
+   * Native active-track/index state still updates. Event-driven hooks do not refresh.
+   */
+  skipToIndex(index: number, silent?: boolean): Promise<void>;
+  /** Advance to the next track, optionally suppressing onTrackChange (default false). */
+  skipToNext(silent?: boolean): Promise<void>;
   skipToPrevious(): Promise<void>;
 
   // Playback configuration

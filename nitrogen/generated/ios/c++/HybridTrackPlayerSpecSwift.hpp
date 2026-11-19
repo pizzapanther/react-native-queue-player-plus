@@ -328,16 +328,16 @@ namespace margelo::nitro::queueplayer {
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<void>> skipToIndex(double index) override {
-      auto __result = _swiftPart.skipToIndex(std::forward<decltype(index)>(index));
+    inline std::shared_ptr<Promise<void>> skipToIndex(double index, std::optional<bool> silent) override {
+      auto __result = _swiftPart.skipToIndex(std::forward<decltype(index)>(index), silent);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<void>> skipToNext() override {
-      auto __result = _swiftPart.skipToNext();
+    inline std::shared_ptr<Promise<void>> skipToNext(std::optional<bool> silent) override {
+      auto __result = _swiftPart.skipToNext(silent);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

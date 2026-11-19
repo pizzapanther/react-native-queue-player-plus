@@ -622,6 +622,9 @@ extension TrackPlayer {
     self.announcedTrack = track
     self.announcedTrackId = self.queueItemIds[safe: Int(index)]
     self.announcedTrackPlaying = track != nil && track?.isVideo != true && self.lastReportedState == .playing
+    let silent = self.silentTrackChange
+    self.silentTrackChange = nil
+    if silent?.index == Int(index) && silent?.reason == reason { return }
     self.trackChangeListeners.forEach { $0(track, index, reason, gap, previousTrack, wasPlaying) }
   }
 

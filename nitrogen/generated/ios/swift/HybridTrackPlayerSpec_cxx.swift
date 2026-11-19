@@ -411,9 +411,16 @@ open class HybridTrackPlayerSpec_cxx {
   }
   
   @inline(__always)
-  public final func skipToIndex(index: Double) -> bridge.Result_std__shared_ptr_Promise_void___ {
+  public final func skipToIndex(index: Double, silent: bridge.std__optional_bool_) -> bridge.Result_std__shared_ptr_Promise_void___ {
     do {
-      let __result = try self.__implementation.skipToIndex(index: index)
+      let __result = try self.__implementation.skipToIndex(index: index, silent: { () -> Bool? in
+        if bridge.has_value_std__optional_bool_(silent) {
+          let __unwrapped = bridge.get_std__optional_bool_(silent)
+          return __unwrapped
+        } else {
+          return nil
+        }
+      }())
       let __resultCpp = { () -> bridge.std__shared_ptr_Promise_void__ in
         let __promise = bridge.create_std__shared_ptr_Promise_void__()
         let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_void__(__promise)
@@ -430,9 +437,16 @@ open class HybridTrackPlayerSpec_cxx {
   }
   
   @inline(__always)
-  public final func skipToNext() -> bridge.Result_std__shared_ptr_Promise_void___ {
+  public final func skipToNext(silent: bridge.std__optional_bool_) -> bridge.Result_std__shared_ptr_Promise_void___ {
     do {
-      let __result = try self.__implementation.skipToNext()
+      let __result = try self.__implementation.skipToNext(silent: { () -> Bool? in
+        if bridge.has_value_std__optional_bool_(silent) {
+          let __unwrapped = bridge.get_std__optional_bool_(silent)
+          return __unwrapped
+        } else {
+          return nil
+        }
+      }())
       let __resultCpp = { () -> bridge.std__shared_ptr_Promise_void__ in
         let __promise = bridge.create_std__shared_ptr_Promise_void__()
         let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_void__(__promise)

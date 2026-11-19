@@ -816,6 +816,9 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   @VisibleForTesting
   internal var pendingTrackChangeReason: TrackChangeReason? = null
 
+  // Match the requested transition only; bookkeeping still runs for silent skips.
+  internal var silentTrackChange: Pair<Int, TrackChangeReason>? = null
+
   /** Set to the incoming-track index by [onCrossfadeBegin] the
    *  instant a crossfade fade-in begins. Consumed by
    *  [handleMediaItemTransition] to dedup the structural Media3
@@ -1394,6 +1397,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     // Pending-reason channels reset with the player so a subsequent
     // configure() starts from a clean dispatch state.
     pendingStateChangeReason = null
+    silentTrackChange = null
     pendingTrackChangeReason = null
     lastErrorKey = null
     reportedFailureIndices.clear()
@@ -2444,7 +2448,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
   // When `tracks` is empty and `currentTrackIndex` stays at -1, the
   // arithmetic returns null and each skip method silently no-ops.
 
-  override fun skipToIndex(index: Double): Promise<Unit> =
+  override fun skipToIndex(index: Double, silent: Boolean?): Promise<Unit> =
     Promise.async {
       onMain {
         // Mirror `seekToInternal`'s non-finite guard. Without this
@@ -2460,10 +2464,12 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
         // local seek here would desync from the receiver. `routeSkipToIndex`
         // is synchronous, so it's safe inside `onMain`. Mirrors iOS
         // `skipToIndex`.
+        silentTrackChange = if (silent == true && target != currentTrackIndex)
+          target to TrackChangeReason.AUTO_ADVANCE else null
         if (com.margelo.nitro.queueplayer.cast.CastTransportRouter.routeSkipToIndex(target)) {
           return@onMain
         }
-        skipToIndexInternal(target)
+        skipToIndexInternal(target, silent == true)
       }
     }
 
@@ -2474,7 +2480,7 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
    * (iOS parity).
    */
   @VisibleForTesting
-  internal fun skipToIndexInternal(target: Int) {
+  internal fun skipToIndexInternal(target: Int, silent: Boolean = false) {
     val p = player ?: return
     if (target < 0 || target >= tracks.size) return
     val engine = serviceBinder?.engine ?: return
@@ -2483,6 +2489,8 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     // same-item seek does not produce onMediaItemTransition from Media3.
     val nativeItemUnchanged = p.currentMediaItemIndex == target
     val selectionChanged = currentTrackIndex != target
+    silentTrackChange = if (silent && selectionChanged)
+      target to TrackChangeReason.USER_SKIP_TO_INDEX else null
     currentTrackIndex = target
     pauseForVideoTrack()
     // Seating a position is an attempt at it, so the report against it no
@@ -2508,18 +2516,22 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     recomputeCapabilities()
   }
 
-  override fun skipToNext(): Promise<Unit> =
+  override fun skipToNext(silent: Boolean?): Promise<Unit> =
     Promise.async {
       onMain {
+        silentTrackChange = if (silent == true) computeNextIndex()
+          ?.takeIf { it != currentTrackIndex }?.let { it to TrackChangeReason.AUTO_ADVANCE } else null
         if (com.margelo.nitro.queueplayer.cast.CastTransportRouter.routeSkipToNext()) return@onMain
-        skipToNextInternal()
+        skipToNextInternal(silent == true)
       }
     }
 
   @VisibleForTesting
-  internal fun skipToNextInternal() {
+  internal fun skipToNextInternal(silent: Boolean = false) {
     val p = player ?: return
     val next = computeNextIndex() ?: return
+    silentTrackChange = if (silent && next != currentTrackIndex)
+      next to TrackChangeReason.USER_SKIP_NEXT else null
     currentTrackIndex = next
     pauseForVideoTrack()
     reportedFailureIndices.remove(next)
@@ -4224,6 +4236,9 @@ class TrackPlayer : HybridTrackPlayerSpec(), PlaybackEngineDelegate {
     val wasPlaying = previousTrack != null && announcedTrackPlaying
     announcedTrack = track
     announcedTrackPlaying = track != null && track.isVideo != true && lastReportedState == PlayerState.PLAYING
+    val silent = silentTrackChange
+    silentTrackChange = null
+    if (silent == (index.toInt() to reason)) return
     trackChangeListeners.forEach { it(track, index, reason, gap, previousTrack, wasPlaying) }
   }
 

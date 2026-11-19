@@ -510,9 +510,9 @@ namespace margelo::nitro::queueplayer {
       return __promise;
     }();
   }
-  std::shared_ptr<Promise<void>> JHybridTrackPlayerSpec::skipToIndex(double index) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(double /* index */)>("skipToIndex");
-    auto __result = method(_javaPart, index);
+  std::shared_ptr<Promise<void>> JHybridTrackPlayerSpec::skipToIndex(double index, std::optional<bool> silent) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(double /* index */, jni::alias_ref<jni::JBoolean> /* silent */)>("skipToIndex");
+    auto __result = method(_javaPart, index, silent.has_value() ? jni::JBoolean::valueOf(silent.value()) : nullptr);
     return [&]() {
       auto __promise = Promise<void>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& /* unit */) {
@@ -525,9 +525,9 @@ namespace margelo::nitro::queueplayer {
       return __promise;
     }();
   }
-  std::shared_ptr<Promise<void>> JHybridTrackPlayerSpec::skipToNext() {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>()>("skipToNext");
-    auto __result = method(_javaPart);
+  std::shared_ptr<Promise<void>> JHybridTrackPlayerSpec::skipToNext(std::optional<bool> silent) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JBoolean> /* silent */)>("skipToNext");
+    auto __result = method(_javaPart, silent.has_value() ? jni::JBoolean::valueOf(silent.value()) : nullptr);
     return [&]() {
       auto __promise = Promise<void>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& /* unit */) {

@@ -68,8 +68,8 @@ namespace margelo::nitro::queueplayer {
     std::shared_ptr<Promise<void>> stop() override;
     std::shared_ptr<Promise<void>> retry() override;
     std::shared_ptr<Promise<void>> seekTo(double position) override;
-    std::shared_ptr<Promise<void>> skipToIndex(double index) override;
-    std::shared_ptr<Promise<void>> skipToNext() override;
+    std::shared_ptr<Promise<void>> skipToIndex(double index, std::optional<bool> silent) override;
+    std::shared_ptr<Promise<void>> skipToNext(std::optional<bool> silent) override;
     std::shared_ptr<Promise<void>> skipToPrevious() override;
     std::shared_ptr<Promise<void>> setPlaybackMode(const PlaybackMode& mode) override;
     PlaybackMode getPlaybackMode() override;

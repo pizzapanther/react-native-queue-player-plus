@@ -23,7 +23,7 @@ extension TrackPlayer {
   /// the target index in every repeat mode, including `.queue` (it
   /// never wraps — the target is absolute). Out-of-range indices
   /// silently no-op.
-  func skipToIndex(index: Double) throws -> Promise<Void> {
+  func skipToIndex(index: Double, silent: Bool? = nil) throws -> Promise<Void> {
     return enqueue {
       // Engine-aware: under CrossfadeEngine `self.player` is nil
       // by design. Gating the skip on the engine surface lets
@@ -39,19 +39,24 @@ extension TrackPlayer {
       // echo drives the metadata + active-track update through the
       // bridge (same as skipToNext/Previous). The local engine stays
       // paused, so a local index write would desync from the receiver.
+      self.silentTrackChange = silent == true && target != self.currentTrackIndex
+        ? (target, .autoAdvance) : nil
       if CastTransportRouter.routeSkipToIndex(index: target) { return }
       self.applyNewCurrentIndex(
-        newIndex: target, reason: .userSkipToIndex)
+        newIndex: target, reason: .userSkipToIndex, silent: silent == true)
     }
   }
 
-  func skipToNext() throws -> Promise<Void> {
+  func skipToNext(silent: Bool? = nil) throws -> Promise<Void> {
     return enqueue {
+      self.silentTrackChange = silent == true ? self.computeNextIndex().flatMap {
+        $0 != self.currentTrackIndex ? ($0, TrackChangeReason.autoAdvance) : nil
+      } : nil
       if CastTransportRouter.routeSkipToNext() { return }
       guard self.engine != nil else { return }
       guard let next = self.computeNextIndex() else { return }
       self.applyNewCurrentIndex(
-        newIndex: next, reason: .userSkipNext)
+        newIndex: next, reason: .userSkipNext, silent: silent == true)
     }
   }
 
@@ -269,9 +274,11 @@ extension TrackPlayer {
   /// A `Bool` return would be a *prediction* of whether KVO will
   /// fire — predictions drift, KVO doesn't.
   internal func applyNewCurrentIndex(
-    newIndex: Int, reason: TrackChangeReason
+    newIndex: Int, reason: TrackChangeReason, silent: Bool = false
   ) {
     guard newIndex >= 0, newIndex < self.tracks.count else { return }
+    self.silentTrackChange = silent && newIndex != self.currentTrackIndex
+      ? (newIndex, reason) : nil
     if self.tracks[newIndex].isVideo == true {
       self.currentTrackIndex = newIndex
       self.pendingTrackChangeReason = reason

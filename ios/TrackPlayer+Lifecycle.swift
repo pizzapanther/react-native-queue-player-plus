@@ -643,6 +643,7 @@ extension TrackPlayer {
     self.retryAttemptsRemaining.removeAll()
     self.lastReportedState = .none
     self.reachedQueueEnd = false
+    self.silentTrackChange = nil
     self.pendingTrackChangeReason = nil
     self.pendingStateChangeReason = nil
     self.audioSession.deactivate()

@@ -154,8 +154,8 @@ namespace margelo::nitro::queueplayer {
       virtual std::shared_ptr<Promise<void>> stop() = 0;
       virtual std::shared_ptr<Promise<void>> retry() = 0;
       virtual std::shared_ptr<Promise<void>> seekTo(double position) = 0;
-      virtual std::shared_ptr<Promise<void>> skipToIndex(double index) = 0;
-      virtual std::shared_ptr<Promise<void>> skipToNext() = 0;
+      virtual std::shared_ptr<Promise<void>> skipToIndex(double index, std::optional<bool> silent) = 0;
+      virtual std::shared_ptr<Promise<void>> skipToNext(std::optional<bool> silent) = 0;
       virtual std::shared_ptr<Promise<void>> skipToPrevious() = 0;
       virtual std::shared_ptr<Promise<void>> setPlaybackMode(const PlaybackMode& mode) = 0;
       virtual PlaybackMode getPlaybackMode() = 0;

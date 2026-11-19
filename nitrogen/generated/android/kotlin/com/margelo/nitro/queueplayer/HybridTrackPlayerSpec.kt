@@ -89,11 +89,11 @@ abstract class HybridTrackPlayerSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
-  abstract fun skipToIndex(index: Double): Promise<Unit>
+  abstract fun skipToIndex(index: Double, silent: Boolean?): Promise<Unit>
   
   @DoNotStrip
   @Keep
-  abstract fun skipToNext(): Promise<Unit>
+  abstract fun skipToNext(silent: Boolean?): Promise<Unit>
   
   @DoNotStrip
   @Keep

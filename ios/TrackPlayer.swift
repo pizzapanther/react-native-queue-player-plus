@@ -533,6 +533,9 @@ class TrackPlayer: HybridTrackPlayerSpec {
   /// the resync.
   internal var pendingTrackChangeReason: TrackChangeReason?
 
+  // Match the requested transition only; bookkeeping still runs for silent skips.
+  internal var silentTrackChange: (index: Int, reason: TrackChangeReason)?
+
   /// Counterpart to `pendingTrackChangeReason` for state transitions.
   /// `play` / `pause` / `stop` / `seekTo` stash `.user` before calling
   /// the native method; the `timeControlStatus` KVO picks it up to

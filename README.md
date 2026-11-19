@@ -285,3 +285,17 @@ Full guides and API reference: **https://ghenry22.github.io/react-native-queue-p
 ## License
 
 Apache-2.0
+
+### Silent skips
+
+Pass `true` to suppress `onTrackChange` for a skip:
+
+```ts
+await player.skipToIndex(2, true);
+await player.skipToNext(true);
+```
+
+Omitting `silent` or passing `false` preserves normal events. Silent skips still
+update the native active track and current queue index. Hooks driven by
+`onTrackChange`, including `useActiveTrack` and `useQueue`, do not refresh from
+that suppressed event. Read `getCurrentTrackIndex()` and `getQueue()` if needed.
